@@ -1,3 +1,4 @@
+import { NewsDeleteButton } from '@/components/dashboard/NewsDeleteButton'
 import { NewsStatusBadge } from '@/components/dashboard/NewsStatusBadge'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -127,9 +128,12 @@ export default async function DashboardNieuwsPage({ searchParams }: DashboardNie
                   </TableCell>
                   <TableCell className="text-right text-xs text-gray-500">{new Date(item.createdAt).toLocaleDateString('nl-NL')}</TableCell>
                   <TableCell className="text-right">
-                    <Link href={`/dashboard/nieuws/${item.id}?src=${item.origin}`} className="text-sm font-medium text-orange-600 hover:text-orange-700">
-                      Bekijk
-                    </Link>
+                    <div className="inline-flex items-center gap-2">
+                      <Link href={`/dashboard/nieuws/${item.id}?src=${item.origin}`} className="text-sm font-medium text-orange-600 hover:text-orange-700">
+                        Bekijk
+                      </Link>
+                      <NewsDeleteButton id={item.id} source={item.origin} />
+                    </div>
                   </TableCell>
                 </TableRow>
               ))

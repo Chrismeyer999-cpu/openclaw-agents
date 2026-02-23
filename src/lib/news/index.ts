@@ -1,4 +1,4 @@
-import { getAgentNewsById, listAgentNews, updateAgentNewsStatus } from '@/lib/news/agentNews'
+import { deleteAgentNewsById, getAgentNewsById, listAgentNews, updateAgentNewsStatus } from '@/lib/news/agentNews'
 import { listSeoNews, getSeoNewsById } from '@/lib/news/seoNews'
 import type { NewsFilters, NewsSourceMode, UnifiedNewsItem } from '@/lib/news/types'
 import { createClient } from '@/lib/supabase/server'
@@ -33,6 +33,15 @@ export async function updateNewsStatus(id: string, reviewStatus: string, source:
 
   const { data, error } = await supabase.from('nieuws').update(payload).eq('id', id).select('id').maybeSingle()
   if (error) throw new Error(`Update mislukt: ${error.message}`)
+  return data
+}
+
+export async function deleteNewsItem(id: string, source: NewsSourceMode | null) {
+  if (source === 'agent') return deleteAgentNewsById(id)
+
+  const supabase = await createClient()
+  const { data, error } = await supabase.from('nieuws').delete().eq('id', id).select('id').maybeSingle()
+  if (error) throw new Error(`Verwijderen mislukt: ${error.message}`)
   return data
 }
 

@@ -1,12 +1,22 @@
 import { inferSiteFromText } from '@/lib/news/siteUtils'
-import { getAgentNewsRecordById, listAgentNewsRecords, type AgentNewsRecord, updateAgentNewsRecordStatus } from '@/lib/news/agentNewsDb'
+import {
+  deleteAgentNewsRecord,
+  getAgentNewsRecordById,
+  listAgentNewsRecords,
+  type AgentNewsRecord,
+  updateAgentNewsRecordStatus
+} from '@/lib/news/agentNewsDb'
 import type { NewsFilters, UnifiedNewsItem } from '@/lib/news/types'
 
 export async function listAgentNews(filters: NewsFilters): Promise<UnifiedNewsItem[] | null> {
   const result = await listAgentNewsRecords(filters.limit ?? 200)
   if (!result) return null
 
-  let items = result.rows.map(mapAgentRow).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+  let items = result.rows
+    .map(mapAgentRow)
+    .filter((item) => isDomainRelevant(item))
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+
   if (filters.status && filters.status !== 'all') items = items.filter((item) => item.reviewStatus === filters.status)
   if (filters.workspaceDomain && filters.workspaceDomain !== 'all') items = items.filter((item) => item.site === filters.workspaceDomain)
   if (filters.source && filters.source !== 'all') items = items.filter((item) => item.sourceType.toLowerCase() === filters.source?.toLowerCase())
@@ -23,6 +33,10 @@ export async function getAgentNewsById(id: string) {
 
 export async function updateAgentNewsStatus(id: string, reviewStatus: string) {
   return updateAgentNewsRecordStatus(id, reviewStatus)
+}
+
+export async function deleteAgentNewsById(id: string) {
+  return deleteAgentNewsRecord(id)
 }
 
 function mapAgentRow(row: AgentNewsRecord): UnifiedNewsItem {
@@ -46,4 +60,46 @@ function asString(value: unknown) {
 function normalizeReviewStatus(value: string) {
   if (value === 'approved' || value === 'rejected' || value === 'published') return value
   return 'pending'
+}
+
+const POSITIVE_TERMS = [
+  'architect',
+  'architectuur',
+  'woning',
+  'woningbouw',
+  'nieuwbouw',
+  'verbouw',
+  'kavel',
+  'bestemmingsplan',
+  'omgevingswet',
+  'omgevingsplan',
+  'omgevingsvergunning',
+  'bouwvergunning',
+  'bouwbesluit',
+  'bouwkosten',
+  'aannemer',
+  'ruimtelijke ordening',
+  'duurzaam bouwen'
+]
+
+const NEGATIVE_TERMS = [
+  'basisonderwijs',
+  'onderwijs',
+  'school',
+  'curriculum',
+  'leraren',
+  'zorg',
+  'sport',
+  'voetbal',
+  'entertainment'
+]
+
+function isDomainRelevant(item: UnifiedNewsItem) {
+  const text = [item.title, item.summary, item.body, item.sourceUrl, item.sourceType].filter(Boolean).join(' ').toLowerCase()
+
+  const hasPositive = POSITIVE_TERMS.some((term) => text.includes(term))
+  const hasNegative = NEGATIVE_TERMS.some((term) => text.includes(term))
+
+  if (hasNegative && !hasPositive) return false
+  return hasPositive
 }
