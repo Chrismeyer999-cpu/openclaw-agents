@@ -1,0 +1,12 @@
+{
+  "project": "seo-dashboard",
+  "last_updated": "2026-02-23",
+  "tasks": [
+    { "id": "01", "name": "Schema + migraties", "spec": "specs/01-schema-setup.md", "status": "done" },
+    { "id": "02", "name": "Login + middleware", "spec": "specs/02-login-auth.md", "status": "done" },
+    { "id": "03", "name": "Dashboard overview", "spec": "specs/03-dashboard-overview.md", "status": "done" },
+    { "id": "04", "name": "Pillar pages CRUD", "spec": "specs/04-pillar-pages-crud.md", "status": "todo" },
+    { "id": "05", "name": "LLM tracker", "spec": "specs/05-llm-tracker.md", "status": "todo" },
+    { "id": "06", "name": "Nieuws module", "spec": "specs/06-nieuws-module.md", "status": "done" }
+  ]
+}

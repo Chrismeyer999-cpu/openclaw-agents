@@ -1,0 +1,323 @@
+{
+  "meta": {
+    "name": "SEO Dashboard",
+    "type": "Internal Admin - SEO Intelligence Platform",
+    "targets": ["zwijsen.net", "kavelarchitect.nl", "brikxai.nl"],
+    "designStyle": "Clean, professional, light-first, metric-focused"
+  },
+
+  "chartsLibrary": {
+    "package": "recharts",
+    "install": "npm install recharts",
+    "note": "Wrap all charts in ResponsiveContainer. Use Tailwind color values via stroke/fill props."
+  },
+
+  "layout": {
+    "structure": {
+      "type": "sidebar-left + topbar + content",
+      "grid": {
+        "desktop": "grid-cols-[260px_1fr]",
+        "tablet": "grid-cols-[80px_1fr]",
+        "mobile": "single-column"
+      }
+    },
+    "containers": {
+      "maxWidth": "max-w-7xl",
+      "padding": "px-6 lg:px-8",
+      "sectionSpacing": "space-y-6"
+    }
+  },
+
+  "responsiveBreakpoints": {
+    "sm": "640px", "md": "768px", "lg": "1024px",
+    "xl": "1280px", "2xl": "1536px",
+    "behavior": {
+      "mobile": {
+        "sidebar": "hidden, drawer overlay via shadcn Sheet",
+        "topbar": "compact with hamburger menu button",
+        "cards": "stacked 1 column",
+        "tables": "overflow-x-auto horizontal scroll"
+      },
+      "tablet": {
+        "sidebar": "icon-only collapsed (w-[80px]), labels hidden",
+        "cards": "2 columns",
+        "charts": "full width"
+      },
+      "desktop": {
+        "sidebar": "expanded (w-[260px]) with labels",
+        "cards": "3-4 columns grid",
+        "analytics": "2-column layout"
+      }
+    }
+  },
+
+  "colorSystem": {
+    "lightMode": {
+      "background": "bg-gray-50",
+      "surface": "bg-white",
+      "border": "border-gray-200",
+      "textPrimary": "text-gray-900",
+      "textSecondary": "text-gray-500",
+      "accentPrimary": "text-emerald-600",
+      "accentDanger": "text-red-600",
+      "accentWarning": "text-orange-500",
+      "brand": "text-orange-500",
+      "hover": "hover:bg-gray-100"
+    },
+    "darkMode": {
+      "background": "bg-gray-950",
+      "surface": "bg-gray-900",
+      "border": "border-gray-800",
+      "textPrimary": "text-gray-100",
+      "textSecondary": "text-gray-400",
+      "accentPrimary": "text-emerald-400",
+      "accentDanger": "text-red-400",
+      "accentWarning": "text-orange-400",
+      "brand": "text-orange-400",
+      "hover": "hover:bg-gray-800"
+    }
+  },
+
+  "typography": {
+    "fontFamily": "Inter, sans-serif",
+    "heading": {
+      "h1": "text-2xl font-semibold tracking-tight",
+      "h2": "text-xl font-semibold",
+      "h3": "text-lg font-medium"
+    },
+    "body": { "base": "text-sm", "muted": "text-xs text-gray-500" },
+    "numeric": {
+      "largeMetric": "text-3xl font-bold",
+      "mediumMetric": "text-xl font-semibold"
+    }
+  },
+
+  "sidebar": {
+    "width": "w-[260px]",
+    "collapsedWidth": "w-[80px]",
+    "background": "bg-white dark:bg-gray-900",
+    "border": "border-r border-gray-200 dark:border-gray-800",
+    "sections": [
+      {
+        "label": "Overview",
+        "items": [
+          { "label": "Dashboard", "icon": "LayoutDashboard", "href": "/dashboard" }
+        ]
+      },
+      {
+        "label": "Workspaces",
+        "items": [
+          {
+            "label": "kavelarchitect.nl", "icon": "Globe",
+            "subitems": [
+              { "label": "Pages", "href": "/dashboard/[id]/pages" },
+              { "label": "LLM Tracker", "href": "/dashboard/[id]/llm" },
+              { "label": "Nieuws", "href": "/dashboard/[id]/nieuws" }
+            ]
+          },
+          {
+            "label": "zwijsen.net", "icon": "Globe",
+            "subitems": [
+              { "label": "Pages", "href": "/dashboard/[id]/pages" },
+              { "label": "LLM Tracker", "href": "/dashboard/[id]/llm" },
+              { "label": "Nieuws", "href": "/dashboard/[id]/nieuws" }
+            ]
+          },
+          {
+            "label": "brikxai.nl", "icon": "Globe",
+            "subitems": [
+              { "label": "Pages", "href": "/dashboard/[id]/pages" },
+              { "label": "LLM Tracker", "href": "/dashboard/[id]/llm" },
+              { "label": "Nieuws", "href": "/dashboard/[id]/nieuws" }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Settings",
+        "items": [
+          { "label": "API Integrations", "icon": "Plug", "href": "/dashboard/settings/api" },
+          { "label": "Workspaces", "icon": "Settings", "href": "/dashboard/settings/workspaces" }
+        ]
+      }
+    ],
+    "interaction": {
+      "activeState": "bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400",
+      "hoverState": "hover:bg-gray-100 dark:hover:bg-gray-800",
+      "subitemIndent": "pl-9 text-xs"
+    }
+  },
+
+  "topbar": {
+    "height": "h-16",
+    "border": "border-b border-gray-200 dark:border-gray-800",
+    "background": "bg-white dark:bg-gray-900",
+    "elements": ["Hamburger (mobile)", "Search Input", "Workspace Switcher", "Dark Mode Toggle", "User Avatar"],
+    "search": {
+      "style": "rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-gray-50 dark:bg-gray-800",
+      "focus": "focus:ring-2 focus:ring-orange-500 focus:outline-none",
+      "placeholder": "Zoek pagina's, clusters..."
+    },
+    "primaryAction": {
+      "component": "Button",
+      "label": "Export",
+      "style": "bg-orange-500 text-white hover:bg-orange-600 rounded-md px-4 py-2 text-sm font-medium"
+    }
+  },
+
+  "cards": {
+    "base": {
+      "style": "bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 shadow-sm"
+    },
+    "metricCard": {
+      "layout": "flex flex-col justify-between gap-3",
+      "icon": "text-gray-400, top-right, size-4",
+      "label": "text-xs font-medium text-gray-500 uppercase tracking-wide",
+      "metric": "text-3xl font-bold text-gray-900 dark:text-gray-100",
+      "deltaPositive": "text-emerald-600 dark:text-emerald-400 text-xs font-medium flex items-center gap-1",
+      "deltaNegative": "text-red-600 dark:text-red-400 text-xs font-medium flex items-center gap-1",
+      "deltaWarning": "text-orange-500 dark:text-orange-400 text-xs font-medium"
+    },
+    "workspaceCard": {
+      "header": "domain name + favicon + external link icon",
+      "metrics": "pillar count, avg GSC position, LLM score progress bar",
+      "llmScoreBar": "shadcn Progress component, color: emerald >70%, orange 40-70%, red <40%",
+      "newsBadge": "red dot Badge top-right corner if pending nieuws > 0",
+      "footer": "two buttons: 'Pages' (ghost) and 'LLM Tracker' (orange outline)"
+    }
+  },
+
+  "dashboardGrid": {
+    "topRow": {
+      "layout": "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6",
+      "widgets": ["Total Organic Traffic", "LLM Mentions (30d)", "Structured Data Coverage"]
+    },
+    "middleRow": {
+      "layout": "grid grid-cols-1 xl:grid-cols-3 gap-6",
+      "left": "col-span-2: Performance Line Chart (recharts)",
+      "right": "col-span-1: SEO Health Score Gauge (recharts RadialBar)"
+    },
+    "bottomRow": {
+      "layout": "grid grid-cols-1 lg:grid-cols-2 gap-6",
+      "widgets": ["Top Performing Pages Table", "Pending Nieuws Table"]
+    }
+  },
+
+  "charts": {
+    "lineChart": {
+      "stroke": "#f97316",
+      "fill": "rgba(249,115,22,0.08)",
+      "grid": "stroke-gray-100 dark:stroke-gray-800",
+      "tooltip": "bg-gray-900 text-white rounded-md text-xs px-2 py-1"
+    },
+    "gaugeChart": {
+      "type": "recharts RadialBarChart",
+      "successZone": "#10b981",
+      "warningZone": "#f97316",
+      "dangerZone": "#ef4444",
+      "centerLabel": "text-3xl font-bold + 'SEO Score' text-xs muted"
+    },
+    "barChart": {
+      "positive": "#10b981",
+      "negative": "#ef4444",
+      "neutral": "#d1d5db"
+    }
+  },
+
+  "tables": {
+    "wrapper": "overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800",
+    "table": "min-w-full text-sm",
+    "thead": "bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs uppercase tracking-wide",
+    "row": "border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors",
+    "statusBadges": {
+      "success": "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 text-xs px-2 py-0.5 rounded-full",
+      "warning": "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 text-xs px-2 py-0.5 rounded-full",
+      "danger": "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 text-xs px-2 py-0.5 rounded-full"
+    },
+    "actions": {
+      "style": "flex gap-2 justify-end items-center",
+      "edit": "ghost button, Pencil icon size-4, text-gray-400 hover:text-gray-700",
+      "delete": "ghost button, Trash2 icon size-4, text-gray-400 hover:text-red-600",
+      "primary": "text-xs px-3 py-1 bg-orange-500 text-white rounded-md hover:bg-orange-600"
+    }
+  },
+
+  "emptyStates": {
+    "style": "flex flex-col items-center justify-center py-16 text-center",
+    "icon": "size-10 text-gray-300 dark:text-gray-600 mb-3",
+    "heading": "text-sm font-medium text-gray-500",
+    "subtext": "text-xs text-gray-400 mt-1 max-w-xs",
+    "action": "mt-4 Button variant orange-500 (optioneel)"
+  },
+
+  "forms": {
+    "container": "shadcn Dialog voor kleine forms, shadcn Sheet (right slide-in) voor brede forms",
+    "fieldWrapper": "flex flex-col gap-1.5",
+    "label": "shadcn Label text-sm font-medium",
+    "input": "shadcn Input, focus:ring-orange-500",
+    "select": "shadcn Select",
+    "textarea": "shadcn Textarea, min-h-[100px]",
+    "checkboxGroup": "grid grid-cols-2 gap-2",
+    "error": "text-xs text-red-500 mt-1",
+    "submitButton": "bg-orange-500 text-white hover:bg-orange-600, loading state with Loader2 spinner"
+  },
+
+  "seoWidgets": {
+    "TotalOrganicTraffic": {
+      "description": "Google Search Console clicks (30d)",
+      "indicator": "emerald als MoM > 0, red als < 0, arrow icon"
+    },
+    "LLMMentions": {
+      "description": "Mentions in ChatGPT + Perplexity (30d)",
+      "indicator": "emerald als trend omhoog, oranje als stabiel"
+    },
+    "StructuredDataCoverage": {
+      "description": "% pagina's met geldige JSON-LD",
+      "indicator": "emerald als >= 80%, orange als 50-79%, red als < 50%"
+    },
+    "SEOHealthScore": {
+      "description": "Samengestelde score: traffic + rankings + schema + LLM mentions",
+      "visual": "RadialBar gauge, 0-100",
+      "zones": "0-50 red, 51-75 orange, 76-100 emerald"
+    }
+  },
+
+  "darkModeToggle": {
+    "implementation": "next-themes, class strategy",
+    "install": "npm install next-themes",
+    "storage": "localStorage",
+    "transition": "transition-colors duration-200 ease-in-out",
+    "icon": "Sun (light) / Moon (dark), size-4, in topbar"
+  },
+
+  "loadingStates": {
+    "skeleton": "animate-pulse rounded-md bg-gray-200 dark:bg-gray-700",
+    "cardSkeleton": "h-[120px] w-full rounded-xl",
+    "rowSkeleton": "h-10 w-full",
+    "chartSkeleton": "h-[200px] w-full rounded-xl"
+  },
+
+  "interactionPatterns": {
+    "hover": "subtle background highlight, transition-colors duration-150",
+    "focus": "ring-2 ring-orange-500 ring-offset-2",
+    "activeMetric": "scale-105 transition-transform duration-150",
+    "toast": "shadcn Sonner, success=emerald, error=red, info=gray"
+  },
+
+  "icons": {
+    "library": "lucide-react",
+    "install": "npm install lucide-react",
+    "size": "size-4 (default), size-5 (sidebar), size-10 (empty states)",
+    "style": "outline, consistent stroke-width-1.5"
+  },
+
+  "accessibility": {
+    "contrastRatio": "WCAG AA compliant",
+    "aria": [
+      "aria-label for icon-only buttons",
+      "aria-live='polite' for dynamic metrics",
+      "aria-expanded for sidebar collapse",
+      "aria-current='page' for active nav item"
+    ]
+  }
+}

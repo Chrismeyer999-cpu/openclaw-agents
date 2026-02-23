@@ -1,0 +1,21 @@
+# SEO Intelligence Dashboard — Project Summary
+
+## Doel
+Intern admin dashboard voor kavelarchitect.nl, zwijsen.net, brikxai.nl.
+Tracked: pillar page SEO (GSC), LLM mentions, nieuws review workflow.
+
+## Stack
+Next.js 15 App Router | TypeScript strict | Tailwind | shadcn/ui
+Supabase (Postgres + RLS + Edge Functions) | Vercel (deploy + cron)
+
+## Status
+Zie tasks.json voor actuele voortgang.
+
+## Routes
+/login → /dashboard → /dashboard/[workspaceId] → tabs: pages | llm | nieuws
+
+## Kritische regels
+- RLS aan op alle tabellen, authenticated only
+- Geen mock data, altijd echte Supabase queries
+- Server Components voor data fetching
+- Zie agents.md voor bestandslimieten
