@@ -35,14 +35,13 @@ export default async function DashboardNieuwsDetailPage({ params, searchParams }
         </CardHeader>
         <CardContent className="space-y-4">
           {item.summary ? <p className="text-sm leading-6 text-gray-700">{item.summary}</p> : null}
-          {item.body ? <article className="whitespace-pre-wrap text-sm leading-6 text-gray-800">{item.body}</article> : null}
           {item.sourceUrl ? (
             <a href={item.sourceUrl} target="_blank" rel="noreferrer" className="inline-flex text-sm font-medium text-orange-600 hover:text-orange-700">
               Open bron
             </a>
           ) : null}
           <p className="text-xs text-gray-500">Aangemaakt: {new Date(item.createdAt).toLocaleString('nl-NL')}</p>
-          <NewsReviewActions id={item.id} currentStatus={item.reviewStatus} source={item.origin} />
+          <NewsReviewActions id={item.id} currentStatus={item.reviewStatus} source={item.origin} site={item.site} initialBody={item.body} />
         </CardContent>
       </Card>
     </section>

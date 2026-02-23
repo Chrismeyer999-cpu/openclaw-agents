@@ -1,6 +1,8 @@
-import { deleteAgentNewsById, getAgentNewsById, listAgentNews, updateAgentNewsStatus } from '@/lib/news/agentNews'
+import { createDraftArticleBody } from '@/lib/news/draftArticle'
+import { deleteAgentNewsById, getAgentNewsById, listAgentNews, updateAgentNewsBody, updateAgentNewsStatus } from '@/lib/news/agentNews'
 import { listSeoNews, getSeoNewsById } from '@/lib/news/seoNews'
 import type { NewsFilters, NewsSourceMode, UnifiedNewsItem } from '@/lib/news/types'
+import { publishToZwijsenNieuws } from '@/lib/news/zwijsenPublisher'
 import { createClient } from '@/lib/supabase/server'
 
 export async function listNewsItems(filters: NewsFilters) {
@@ -34,6 +36,79 @@ export async function updateNewsStatus(id: string, reviewStatus: string, source:
   const { data, error } = await supabase.from('nieuws').update(payload).eq('id', id).select('id').maybeSingle()
   if (error) throw new Error(`Update mislukt: ${error.message}`)
   return data
+}
+
+export async function updateNewsBody(id: string, body: string, source: NewsSourceMode | null) {
+  if (source === 'agent') return updateAgentNewsBody(id, body)
+
+  const supabase = await createClient()
+  const { data, error } = await supabase.from('nieuws').update({ body_md: body }).eq('id', id).select('id').maybeSingle()
+  if (error) throw new Error(`Artikeltekst opslaan mislukt: ${error.message}`)
+  return data
+}
+
+export async function writeNewsArticle(id: string, source: NewsSourceMode | null) {
+  const item = await getNewsItemById(id, source)
+  if (!item) return null
+
+  const draftBody =
+    item.body?.trim() ||
+    createDraftArticleBody({
+      title: item.title,
+      summary: item.summary,
+      sourceUrl: item.sourceUrl,
+      site: item.site
+    })
+
+  const resolvedSource = source ?? item.origin
+  await updateNewsBody(id, draftBody, resolvedSource)
+  return { id, body: draftBody, review_status: item.reviewStatus }
+}
+
+export async function saveNewsArticleBody(id: string, source: NewsSourceMode | null, body: string) {
+  const item = await getNewsItemById(id, source)
+  if (!item) return null
+
+  const resolvedSource = source ?? item.origin
+  await updateNewsBody(id, body, resolvedSource)
+  return { id, body, review_status: item.reviewStatus }
+}
+
+export async function publishNewsArticle(id: string, source: NewsSourceMode | null, bodyOverride: string | null) {
+  const item = await getNewsItemById(id, source)
+  if (!item) return null
+
+  const resolvedSource = source ?? item.origin
+  const nextBody = (bodyOverride ?? item.body ?? '').trim()
+  if (!nextBody) {
+    throw new Error('Artikeltekst ontbreekt. Schrijf eerst het artikel en bewerk het indien nodig.')
+  }
+
+  if (bodyOverride && bodyOverride !== item.body) {
+    await updateNewsBody(id, bodyOverride, resolvedSource)
+  }
+
+  if (item.site !== 'zwijsen.net') {
+    throw new Error(`Publiceren naar ${item.site} is nog niet gekoppeld. Start is nu alleen zwijsen.net.`)
+  }
+
+  const publication = await publishToZwijsenNieuws({
+    id: item.id,
+    title: item.title,
+    summary: item.summary,
+    body: nextBody,
+    sourceType: item.sourceType,
+    sourceUrl: item.sourceUrl
+  })
+
+  await updateNewsStatus(id, 'published', resolvedSource)
+  return {
+    id,
+    body: nextBody,
+    review_status: 'published' as const,
+    published_url: publication.url,
+    published_file: publication.filePath
+  }
 }
 
 export async function deleteNewsItem(id: string, source: NewsSourceMode | null) {

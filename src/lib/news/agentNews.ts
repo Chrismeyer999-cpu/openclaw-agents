@@ -4,6 +4,7 @@ import {
   getAgentNewsRecordById,
   listAgentNewsRecords,
   type AgentNewsRecord,
+  updateAgentNewsRecordBody,
   updateAgentNewsRecordStatus
 } from '@/lib/news/agentNewsDb'
 import type { NewsFilters, UnifiedNewsItem } from '@/lib/news/types'
@@ -33,6 +34,10 @@ export async function getAgentNewsById(id: string) {
 
 export async function updateAgentNewsStatus(id: string, reviewStatus: string) {
   return updateAgentNewsRecordStatus(id, reviewStatus)
+}
+
+export async function updateAgentNewsBody(id: string, body: string) {
+  return updateAgentNewsRecordBody(id, body)
 }
 
 export async function deleteAgentNewsById(id: string) {

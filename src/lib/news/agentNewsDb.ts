@@ -37,8 +37,32 @@ export async function updateAgentNewsRecordStatus(id: string, reviewStatus: stri
   if (!isAgentSupabaseConfigured()) return null
 
   const client = createAgentServiceClient()
+  const publishedTimestamp = reviewStatus === 'published' ? new Date().toISOString() : null
   for (const table of AGENT_NEWS_TABLES) {
-    const payloads = [{ review_status: reviewStatus }, { status: reviewStatus }, { review_status: reviewStatus, status: reviewStatus }]
+    const payloads = [
+      { review_status: reviewStatus, ...(publishedTimestamp ? { published_at: publishedTimestamp, published: publishedTimestamp } : {}) },
+      { status: reviewStatus, ...(publishedTimestamp ? { published_at: publishedTimestamp, published: publishedTimestamp } : {}) },
+      {
+        review_status: reviewStatus,
+        status: reviewStatus,
+        ...(publishedTimestamp ? { published_at: publishedTimestamp, published: publishedTimestamp } : {})
+      }
+    ]
+    for (const payload of payloads) {
+      const { data, error } = await client.from(table).update(payload).eq('id', id).select('id').maybeSingle()
+      if (!error && data) return data
+    }
+  }
+
+  return null
+}
+
+export async function updateAgentNewsRecordBody(id: string, body: string) {
+  if (!isAgentSupabaseConfigured()) return null
+
+  const client = createAgentServiceClient()
+  for (const table of AGENT_NEWS_TABLES) {
+    const payloads = [{ body }, { content: body }, { body_md: body }, { body, content: body }, { body, body_md: body }, { body_md: body, content: body }]
     for (const payload of payloads) {
       const { data, error } = await client.from(table).update(payload).eq('id', id).select('id').maybeSingle()
       if (!error && data) return data
