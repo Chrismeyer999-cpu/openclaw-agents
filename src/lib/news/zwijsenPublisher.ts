@@ -6,6 +6,8 @@ interface PublishZwijsenInput {
   title: string
   summary: string | null
   body: string
+  featuredImageUrl?: string | null
+  featuredImageAlt?: string | null
   sourceType: string
   sourceUrl: string | null
 }
@@ -33,6 +35,8 @@ export async function publishToZwijsenNieuws(input: PublishZwijsenInput): Promis
   const excerpt = buildExcerpt(input.summary, input.body)
   const category = mapCategory(input.sourceType)
   const publishedAt = new Date().toISOString().slice(0, 10)
+  const featuredImageUrl = normalizeFeaturedImageUrl(input.featuredImageUrl)
+  const featuredImageAlt = normalizeFeaturedImageAlt(input.featuredImageAlt, input.title)
   const articleContent = buildArticleFile({
     variableName,
     slug,
@@ -40,7 +44,9 @@ export async function publishToZwijsenNieuws(input: PublishZwijsenInput): Promis
     excerpt,
     category,
     publishedAt,
-    htmlBody
+    htmlBody,
+    featuredImageUrl,
+    featuredImageAlt
   })
 
   await fs.writeFile(articleFilePath, articleContent, 'utf8')
@@ -68,7 +74,9 @@ function buildArticleFile({
   excerpt,
   category,
   publishedAt,
-  htmlBody
+  htmlBody,
+  featuredImageUrl,
+  featuredImageAlt
 }: {
   variableName: string
   slug: string
@@ -77,11 +85,15 @@ function buildArticleFile({
   category: 'project' | 'kantoor' | 'publicatie' | 'event'
   publishedAt: string
   htmlBody: string
+  featuredImageUrl: string
+  featuredImageAlt: string
 }) {
   const escapedTitle = escapeSingleQuoted(title)
   const escapedExcerpt = escapeSingleQuoted(excerpt)
   const escapedSlug = escapeSingleQuoted(slug)
   const escapedContent = indentBlock(escapeTemplateLiteral(htmlBody), 4)
+  const escapedFeaturedImageUrl = escapeSingleQuoted(featuredImageUrl)
+  const escapedFeaturedImageAlt = escapeSingleQuoted(featuredImageAlt)
 
   return [
     "import type { NieuwsBericht } from '../types';",
@@ -96,11 +108,11 @@ function buildArticleFile({
     '  seo: {',
     `    title: '${escapedTitle} | Architectenbureau Jules Zwijsen',`,
     `    description: '${escapedExcerpt}',`,
-    `    ogImage: '${DEFAULT_FEATURED_IMAGE}',`,
+    `    ogImage: '${escapedFeaturedImageUrl}',`,
     '  },',
     '  featuredImage: {',
-    `    url: '${DEFAULT_FEATURED_IMAGE}',`,
-    `    alt: '${escapedTitle}',`,
+    `    url: '${escapedFeaturedImageUrl}',`,
+    `    alt: '${escapedFeaturedImageAlt}',`,
     '  },',
     '  content: `',
     escapedContent,
@@ -180,7 +192,7 @@ function buildExcerpt(summary: string | null, body: string) {
 
 function truncate(value: string, limit: number) {
   if (value.length <= limit) return value
-  return `${value.slice(0, limit - 1).trimEnd()}…`
+  return `${value.slice(0, limit - 1).trimEnd()}...`
 }
 
 function stripMarkup(input: string) {
@@ -292,3 +304,14 @@ function indentBlock(value: string, spaces: number) {
     .join('\n')
 }
 
+function normalizeFeaturedImageUrl(value: string | null | undefined) {
+  const trimmed = value?.trim()
+  if (!trimmed) return DEFAULT_FEATURED_IMAGE
+  return trimmed
+}
+
+function normalizeFeaturedImageAlt(value: string | null | undefined, fallbackTitle: string) {
+  const trimmed = value?.trim()
+  if (!trimmed) return fallbackTitle
+  return trimmed
+}

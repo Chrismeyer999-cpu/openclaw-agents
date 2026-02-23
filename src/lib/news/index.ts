@@ -1,5 +1,6 @@
+import { generateArticleFromBrief } from '@/lib/news/articleFromBrief'
 import { createDraftArticleBody } from '@/lib/news/draftArticle'
-import { deleteAgentNewsById, getAgentNewsById, listAgentNews, updateAgentNewsBody, updateAgentNewsStatus } from '@/lib/news/agentNews'
+import { deleteAgentNewsById, getAgentNewsById, listAgentNews, updateAgentNewsBody, updateAgentNewsContent, updateAgentNewsStatus } from '@/lib/news/agentNews'
 import { listSeoNews, getSeoNewsById } from '@/lib/news/seoNews'
 import type { NewsFilters, NewsSourceMode, UnifiedNewsItem } from '@/lib/news/types'
 import { publishToZwijsenNieuws } from '@/lib/news/zwijsenPublisher'
@@ -39,12 +40,42 @@ export async function updateNewsStatus(id: string, reviewStatus: string, source:
 }
 
 export async function updateNewsBody(id: string, body: string, source: NewsSourceMode | null) {
-  if (source === 'agent') return updateAgentNewsBody(id, body)
+  return updateNewsContent(id, { body }, source)
+}
+
+interface NewsContentUpdate {
+  body?: string
+  featuredImageUrl?: string | null
+  featuredImageAlt?: string | null
+}
+
+export async function updateNewsContent(id: string, update: NewsContentUpdate, source: NewsSourceMode | null) {
+  if (source === 'agent') {
+    if (Object.keys(update).length === 1 && typeof update.body === 'string') {
+      return updateAgentNewsBody(id, update.body)
+    }
+    return updateAgentNewsContent(id, update)
+  }
 
   const supabase = await createClient()
-  const { data, error } = await supabase.from('nieuws').update({ body_md: body }).eq('id', id).select('id').maybeSingle()
-  if (error) throw new Error(`Artikeltekst opslaan mislukt: ${error.message}`)
-  return data
+  const payload = buildSeoNewsUpdatePayload(update)
+  if (Object.keys(payload).length === 0) return { id }
+
+  const firstTry = await supabase.from('nieuws').update(payload).eq('id', id).select('id').maybeSingle()
+  if (!firstTry.error) return firstTry.data
+
+  if (isMissingFeaturedImageColumnError(firstTry.error)) {
+    const fallbackPayload = { ...payload }
+    delete fallbackPayload.featured_image_url
+    delete fallbackPayload.featured_image_alt
+
+    if (Object.keys(fallbackPayload).length === 0) return { id }
+    const secondTry = await supabase.from('nieuws').update(fallbackPayload).eq('id', id).select('id').maybeSingle()
+    if (secondTry.error) throw new Error(`Artikel opslaan mislukt: ${secondTry.error.message}`)
+    return secondTry.data
+  }
+
+  throw new Error(`Artikel opslaan mislukt: ${firstTry.error.message}`)
 }
 
 export async function writeNewsArticle(id: string, source: NewsSourceMode | null) {
@@ -62,30 +93,120 @@ export async function writeNewsArticle(id: string, source: NewsSourceMode | null
 
   const resolvedSource = source ?? item.origin
   await updateNewsBody(id, draftBody, resolvedSource)
-  return { id, body: draftBody, review_status: item.reviewStatus }
+  return {
+    id,
+    body: draftBody,
+    featured_image_url: item.featuredImageUrl,
+    featured_image_alt: item.featuredImageAlt,
+    review_status: item.reviewStatus
+  }
 }
 
-export async function saveNewsArticleBody(id: string, source: NewsSourceMode | null, body: string) {
+export async function writeNewsArticleFromBrief(
+  id: string,
+  source: NewsSourceMode | null,
+  brief: string,
+  imageNote: string | null,
+  featuredImageUrl?: string | null,
+  featuredImageAlt?: string | null
+) {
   const item = await getNewsItemById(id, source)
   if (!item) return null
 
   const resolvedSource = source ?? item.origin
-  await updateNewsBody(id, body, resolvedSource)
-  return { id, body, review_status: item.reviewStatus }
+  const nextFeaturedImageUrl = featuredImageUrl === undefined ? item.featuredImageUrl : normalizeOptionalText(featuredImageUrl)
+  const nextFeaturedImageAlt = featuredImageAlt === undefined ? item.featuredImageAlt : normalizeOptionalText(featuredImageAlt)
+
+  const generated = await generateArticleFromBrief({
+    title: item.title,
+    summary: item.summary,
+    sourceUrl: item.sourceUrl,
+    site: item.site,
+    brief,
+    imageUrl: nextFeaturedImageUrl,
+    imageAlt: nextFeaturedImageAlt,
+    imageNote: normalizeOptionalText(imageNote)
+  })
+
+  await updateNewsContent(
+    id,
+    {
+      body: generated.body,
+      featuredImageUrl: nextFeaturedImageUrl,
+      featuredImageAlt: nextFeaturedImageAlt
+    },
+    resolvedSource
+  )
+
+  return {
+    id,
+    body: generated.body,
+    featured_image_url: nextFeaturedImageUrl,
+    featured_image_alt: nextFeaturedImageAlt,
+    review_status: item.reviewStatus,
+    generation_mode: generated.mode
+  }
 }
 
-export async function publishNewsArticle(id: string, source: NewsSourceMode | null, bodyOverride: string | null) {
+export async function saveNewsArticleBody(id: string, source: NewsSourceMode | null, body: string, featuredImageUrl?: string | null, featuredImageAlt?: string | null) {
+  const item = await getNewsItemById(id, source)
+  if (!item) return null
+
+  const resolvedSource = source ?? item.origin
+  const nextFeaturedImageUrl = featuredImageUrl === undefined ? item.featuredImageUrl : featuredImageUrl
+  const nextFeaturedImageAlt = featuredImageAlt === undefined ? item.featuredImageAlt : featuredImageAlt
+
+  await updateNewsContent(
+    id,
+    {
+      body,
+      featuredImageUrl: nextFeaturedImageUrl,
+      featuredImageAlt: nextFeaturedImageAlt
+    },
+    resolvedSource
+  )
+  return {
+    id,
+    body,
+    featured_image_url: nextFeaturedImageUrl,
+    featured_image_alt: nextFeaturedImageAlt,
+    review_status: item.reviewStatus
+  }
+}
+
+export async function publishNewsArticle(
+  id: string,
+  source: NewsSourceMode | null,
+  bodyOverride: string | null,
+  featuredImageUrlOverride?: string | null,
+  featuredImageAltOverride?: string | null
+) {
   const item = await getNewsItemById(id, source)
   if (!item) return null
 
   const resolvedSource = source ?? item.origin
   const nextBody = (bodyOverride ?? item.body ?? '').trim()
+  const nextFeaturedImageUrl = featuredImageUrlOverride === undefined ? item.featuredImageUrl : normalizeOptionalText(featuredImageUrlOverride)
+  const nextFeaturedImageAlt =
+    featuredImageAltOverride === undefined ? item.featuredImageAlt : normalizeOptionalText(featuredImageAltOverride)
   if (!nextBody) {
     throw new Error('Artikeltekst ontbreekt. Schrijf eerst het artikel en bewerk het indien nodig.')
   }
 
-  if (bodyOverride && bodyOverride !== item.body) {
-    await updateNewsBody(id, bodyOverride, resolvedSource)
+  const needsContentUpdate =
+    (bodyOverride !== null && bodyOverride !== item.body) ||
+    featuredImageUrlOverride !== undefined ||
+    featuredImageAltOverride !== undefined
+  if (needsContentUpdate) {
+    await updateNewsContent(
+      id,
+      {
+        body: nextBody,
+        featuredImageUrl: nextFeaturedImageUrl,
+        featuredImageAlt: nextFeaturedImageAlt
+      },
+      resolvedSource
+    )
   }
 
   if (item.site !== 'zwijsen.net') {
@@ -97,6 +218,8 @@ export async function publishNewsArticle(id: string, source: NewsSourceMode | nu
     title: item.title,
     summary: item.summary,
     body: nextBody,
+    featuredImageUrl: nextFeaturedImageUrl,
+    featuredImageAlt: nextFeaturedImageAlt,
     sourceType: item.sourceType,
     sourceUrl: item.sourceUrl
   })
@@ -105,6 +228,8 @@ export async function publishNewsArticle(id: string, source: NewsSourceMode | nu
   return {
     id,
     body: nextBody,
+    featured_image_url: nextFeaturedImageUrl,
+    featured_image_alt: nextFeaturedImageAlt,
     review_status: 'published' as const,
     published_url: publication.url,
     published_file: publication.filePath
@@ -139,4 +264,24 @@ export function pendingCountByDomain(items: UnifiedNewsItem[]) {
     counters.set(item.site, (counters.get(item.site) ?? 0) + 1)
   })
   return counters
+}
+
+function buildSeoNewsUpdatePayload(update: NewsContentUpdate) {
+  const payload: Record<string, string | null> = {}
+  if (typeof update.body === 'string') payload.body_md = update.body
+  if (update.featuredImageUrl !== undefined) payload.featured_image_url = normalizeOptionalText(update.featuredImageUrl)
+  if (update.featuredImageAlt !== undefined) payload.featured_image_alt = normalizeOptionalText(update.featuredImageAlt)
+  return payload
+}
+
+function isMissingFeaturedImageColumnError(error: { message?: string; code?: string }) {
+  const message = (error.message ?? '').toLowerCase()
+  return error.code === '42703' || message.includes('featured_image_url') || message.includes('featured_image_alt')
+}
+
+function normalizeOptionalText(value: string | null | undefined) {
+  if (value === undefined) return null
+  if (value === null) return null
+  const trimmed = value.trim()
+  return trimmed.length > 0 ? trimmed : null
 }

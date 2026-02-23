@@ -3,6 +3,11 @@ import { createAgentServiceClient, isAgentSupabaseConfigured } from '@/lib/supab
 const AGENT_NEWS_TABLES = ['zwijsen_nieuws', 'brikx_nieuws', 'nieuws', 'news_items', 'nieuws_items'] as const
 
 export type AgentNewsRecord = Record<string, unknown>
+export interface AgentNewsContentUpdate {
+  body?: string
+  featuredImageUrl?: string | null
+  featuredImageAlt?: string | null
+}
 
 export async function listAgentNewsRecords(limit: number) {
   if (!isAgentSupabaseConfigured()) return null
@@ -58,14 +63,57 @@ export async function updateAgentNewsRecordStatus(id: string, reviewStatus: stri
 }
 
 export async function updateAgentNewsRecordBody(id: string, body: string) {
+  return updateAgentNewsRecordContent(id, { body })
+}
+
+export async function updateAgentNewsRecordContent(id: string, update: AgentNewsContentUpdate) {
   if (!isAgentSupabaseConfigured()) return null
 
   const client = createAgentServiceClient()
+  const body = typeof update.body === 'string' ? update.body : null
+  const imageUrl = normalizeOptionalText(update.featuredImageUrl)
+  const imageAlt = normalizeOptionalText(update.featuredImageAlt)
+  const bodyPayloads: AgentNewsRecord[] =
+    body !== null
+      ? [{ body }, { content: body }, { body_md: body }, { body, content: body }, { body, body_md: body }, { body_md: body, content: body }]
+      : []
+  const imagePayloads: AgentNewsRecord[] =
+    imageUrl !== undefined || imageAlt !== undefined
+      ? [
+          compactPayload({ featured_image_url: imageUrl, featured_image_alt: imageAlt }),
+          compactPayload({ image_url: imageUrl, image_alt: imageAlt }),
+          compactPayload({ featured_image_url: imageUrl }),
+          compactPayload({ image_url: imageUrl }),
+          compactPayload({ featured_image_alt: imageAlt }),
+          compactPayload({ image_alt: imageAlt })
+        ]
+      : []
+
+  if (bodyPayloads.length === 0 && imagePayloads.length === 0) return { id }
+
   for (const table of AGENT_NEWS_TABLES) {
-    const payloads = [{ body }, { content: body }, { body_md: body }, { body, content: body }, { body, body_md: body }, { body_md: body, content: body }]
-    for (const payload of payloads) {
+    let didUpdate = false
+
+    for (const payload of bodyPayloads) {
+      if (Object.keys(payload).length === 0) continue
       const { data, error } = await client.from(table).update(payload).eq('id', id).select('id').maybeSingle()
-      if (!error && data) return data
+      if (!error && data) {
+        didUpdate = true
+        break
+      }
+    }
+
+    for (const payload of imagePayloads) {
+      if (Object.keys(payload).length === 0) continue
+      const { data, error } = await client.from(table).update(payload).eq('id', id).select('id').maybeSingle()
+      if (!error && data) {
+        didUpdate = true
+        break
+      }
+    }
+
+    if (didUpdate) {
+      return { id }
     }
   }
 
@@ -82,4 +130,14 @@ export async function deleteAgentNewsRecord(id: string) {
   }
 
   return null
+}
+
+function normalizeOptionalText(value: string | null | undefined) {
+  if (value === undefined) return undefined
+  const trimmed = typeof value === 'string' ? value.trim() : ''
+  return trimmed.length > 0 ? trimmed : null
+}
+
+function compactPayload(payload: AgentNewsRecord) {
+  return Object.fromEntries(Object.entries(payload).filter(([, value]) => value !== undefined))
 }

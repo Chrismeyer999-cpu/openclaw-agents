@@ -14,6 +14,8 @@ export interface UnifiedNewsItem {
   title: string
   summary: string | null
   body: string | null
+  featuredImageUrl: string | null
+  featuredImageAlt: string | null
   sourceUrl: string | null
   sourceType: string
   reviewStatus: ReviewStatus

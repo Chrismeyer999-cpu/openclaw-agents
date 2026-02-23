@@ -41,7 +41,15 @@ export default async function DashboardNieuwsDetailPage({ params, searchParams }
             </a>
           ) : null}
           <p className="text-xs text-gray-500">Aangemaakt: {new Date(item.createdAt).toLocaleString('nl-NL')}</p>
-          <NewsReviewActions id={item.id} currentStatus={item.reviewStatus} source={item.origin} site={item.site} initialBody={item.body} />
+          <NewsReviewActions
+            id={item.id}
+            currentStatus={item.reviewStatus}
+            source={item.origin}
+            site={item.site}
+            initialBody={item.body}
+            initialFeaturedImageUrl={item.featuredImageUrl}
+            initialFeaturedImageAlt={item.featuredImageAlt}
+          />
         </CardContent>
       </Card>
     </section>

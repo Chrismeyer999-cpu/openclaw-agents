@@ -1,10 +1,12 @@
 import { inferSiteFromText } from '@/lib/news/siteUtils'
 import {
   deleteAgentNewsRecord,
+  type AgentNewsContentUpdate,
   getAgentNewsRecordById,
   listAgentNewsRecords,
   type AgentNewsRecord,
   updateAgentNewsRecordBody,
+  updateAgentNewsRecordContent,
   updateAgentNewsRecordStatus
 } from '@/lib/news/agentNewsDb'
 import type { NewsFilters, UnifiedNewsItem } from '@/lib/news/types'
@@ -40,6 +42,10 @@ export async function updateAgentNewsBody(id: string, body: string) {
   return updateAgentNewsRecordBody(id, body)
 }
 
+export async function updateAgentNewsContent(id: string, update: AgentNewsContentUpdate) {
+  return updateAgentNewsRecordContent(id, update)
+}
+
 export async function deleteAgentNewsById(id: string) {
   return deleteAgentNewsRecord(id)
 }
@@ -48,6 +54,8 @@ function mapAgentRow(row: AgentNewsRecord): UnifiedNewsItem {
   const title = asString(row.title) ?? asString(row.headline) ?? 'Ongetiteld'
   const summary = asString(row.summary) ?? asString(row.description) ?? null
   const body = asString(row.body) ?? asString(row.content) ?? asString(row.body_md) ?? null
+  const featuredImageUrl = asString(row.featured_image_url) ?? asString(row.image_url) ?? asString(row.featured_image) ?? asString(row.image) ?? null
+  const featuredImageAlt = asString(row.featured_image_alt) ?? asString(row.image_alt) ?? null
   const sourceUrl = asString(row.source_url) ?? asString(row.url) ?? null
   const sourceType = asString(row.source_name) ?? asString(row.source) ?? asString(row.source_type) ?? 'agent'
   const reviewStatus = normalizeReviewStatus(asString(row.review_status) ?? asString(row.status) ?? 'pending')
@@ -55,7 +63,21 @@ function mapAgentRow(row: AgentNewsRecord): UnifiedNewsItem {
   const publishedAt = asString(row.published_at) ?? asString(row.published) ?? null
   const site = inferSiteFromText([asString(row.site), asString(row.topic), title, summary, sourceUrl, sourceType])
 
-  return { id: asString(row.id) ?? title, title, summary, body, sourceUrl, sourceType, reviewStatus, createdAt, publishedAt, site, origin: 'agent' }
+  return {
+    id: asString(row.id) ?? title,
+    title,
+    summary,
+    body,
+    featuredImageUrl,
+    featuredImageAlt,
+    sourceUrl,
+    sourceType,
+    reviewStatus,
+    createdAt,
+    publishedAt,
+    site,
+    origin: 'agent'
+  }
 }
 
 function asString(value: unknown) {

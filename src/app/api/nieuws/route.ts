@@ -1,9 +1,9 @@
-import { deleteNewsItem, normalizeSourceMode, publishNewsArticle, saveNewsArticleBody, updateNewsStatus, writeNewsArticle } from '@/lib/news'
+import { deleteNewsItem, normalizeSourceMode, publishNewsArticle, saveNewsArticleBody, updateNewsStatus, writeNewsArticle, writeNewsArticleFromBrief } from '@/lib/news'
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
 const ALLOWED_REVIEW_STATUSES = new Set(['pending', 'approved', 'rejected', 'published'])
-const ALLOWED_PATCH_ACTIONS = new Set(['set_status', 'write', 'save_body', 'publish'])
+const ALLOWED_PATCH_ACTIONS = new Set(['set_status', 'write', 'write_from_brief', 'save_body', 'publish'])
 
 async function requireUser() {
   const supabase = await createClient()
@@ -28,6 +28,12 @@ export async function PATCH(request: Request) {
         action?: string
         article_body?: string
         body?: string
+        featured_image_url?: string | null
+        featured_image_alt?: string | null
+        image_url?: string | null
+        image_alt?: string | null
+        brief?: string
+        image_note?: string | null
       }
     | null
   if (!body?.id) {
@@ -56,18 +62,34 @@ export async function PATCH(request: Request) {
       return NextResponse.json(written)
     }
 
+    if (action === 'write_from_brief') {
+      if (typeof body.brief !== 'string' || body.brief.trim().length < 10) {
+        return NextResponse.json({ error: 'brief is verplicht en moet minimaal 10 tekens bevatten' }, { status: 400 })
+      }
+      const featuredImageUrl = resolveOptionalImageField(body.featured_image_url, body.image_url)
+      const featuredImageAlt = resolveOptionalImageField(body.featured_image_alt, body.image_alt)
+      const imageNote = typeof body.image_note === 'string' ? body.image_note : body.image_note === null ? null : null
+      const written = await writeNewsArticleFromBrief(body.id, sourceMode, body.brief, imageNote, featuredImageUrl, featuredImageAlt)
+      if (!written) return NextResponse.json({ error: 'Nieuwsitem niet gevonden' }, { status: 404 })
+      return NextResponse.json(written)
+    }
+
     if (action === 'save_body') {
       const articleBody = typeof body.article_body === 'string' ? body.article_body : body.body
       if (typeof articleBody !== 'string') {
         return NextResponse.json({ error: 'article_body is verplicht voor save_body' }, { status: 400 })
       }
-      const saved = await saveNewsArticleBody(body.id, sourceMode, articleBody)
+      const featuredImageUrl = resolveOptionalImageField(body.featured_image_url, body.image_url)
+      const featuredImageAlt = resolveOptionalImageField(body.featured_image_alt, body.image_alt)
+      const saved = await saveNewsArticleBody(body.id, sourceMode, articleBody, featuredImageUrl, featuredImageAlt)
       if (!saved) return NextResponse.json({ error: 'Nieuwsitem niet gevonden' }, { status: 404 })
       return NextResponse.json(saved)
     }
 
     const articleBody = typeof body.article_body === 'string' ? body.article_body : typeof body.body === 'string' ? body.body : null
-    const published = await publishNewsArticle(body.id, sourceMode, articleBody)
+    const featuredImageUrl = resolveOptionalImageField(body.featured_image_url, body.image_url)
+    const featuredImageAlt = resolveOptionalImageField(body.featured_image_alt, body.image_alt)
+    const published = await publishNewsArticle(body.id, sourceMode, articleBody, featuredImageUrl, featuredImageAlt)
     if (!published) return NextResponse.json({ error: 'Nieuwsitem niet gevonden' }, { status: 404 })
     return NextResponse.json(published)
   } catch (error) {
@@ -94,4 +116,10 @@ export async function DELETE(request: Request) {
     const message = error instanceof Error ? error.message : 'Onbekende fout'
     return NextResponse.json({ error: message }, { status: 500 })
   }
+}
+
+function resolveOptionalImageField(primary: unknown, secondary: unknown) {
+  if (typeof primary === 'string' || primary === null) return primary
+  if (typeof secondary === 'string' || secondary === null) return secondary
+  return undefined
 }
