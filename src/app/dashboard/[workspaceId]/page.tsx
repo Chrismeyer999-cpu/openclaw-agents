@@ -22,7 +22,7 @@ export default async function WorkspaceOverviewPage({
           <CardDescription>Openstaande review-items voor {stats.domain}</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-lg font-semibold text-gray-900">{stats.pendingNieuws.toLocaleString('nl-NL')} pending items</p>
+          <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">{stats.pendingNieuws.toLocaleString('nl-NL')} pending items</p>
         </CardContent>
       </Card>
     </div>
@@ -37,7 +37,7 @@ function InfoCard({ title, description, value }: { title: string; description: s
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
-        <p className="text-2xl font-semibold text-gray-900">{value}</p>
+        <p className="text-2xl font-semibold text-gray-900 dark:text-gray-100">{value}</p>
       </CardContent>
     </Card>
   )

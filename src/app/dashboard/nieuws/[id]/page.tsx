@@ -19,7 +19,7 @@ export default async function DashboardNieuwsDetailPage({ params, searchParams }
 
   return (
     <section className="mx-auto max-w-4xl space-y-4">
-      <Link href="/dashboard/nieuws" className="text-sm font-medium text-orange-600 hover:text-orange-700">
+      <Link href="/dashboard/nieuws" className="text-sm font-medium text-orange-600 hover:text-orange-700 dark:text-orange-300 dark:hover:text-orange-200">
         Terug naar Nieuws Center
       </Link>
 
@@ -34,13 +34,13 @@ export default async function DashboardNieuwsDetailPage({ params, searchParams }
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {item.summary ? <p className="text-sm leading-6 text-gray-700">{item.summary}</p> : null}
+          {item.summary ? <p className="text-sm leading-6 text-gray-700 dark:text-gray-300">{item.summary}</p> : null}
           {item.sourceUrl ? (
-            <a href={item.sourceUrl} target="_blank" rel="noreferrer" className="inline-flex text-sm font-medium text-orange-600 hover:text-orange-700">
+            <a href={item.sourceUrl} target="_blank" rel="noreferrer" className="inline-flex text-sm font-medium text-orange-600 hover:text-orange-700 dark:text-orange-300 dark:hover:text-orange-200">
               Open bron
             </a>
           ) : null}
-          <p className="text-xs text-gray-500">Aangemaakt: {new Date(item.createdAt).toLocaleString('nl-NL')}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">Aangemaakt: {new Date(item.createdAt).toLocaleString('nl-NL')}</p>
           <NewsReviewActions
             id={item.id}
             currentStatus={item.reviewStatus}

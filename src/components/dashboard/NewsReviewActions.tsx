@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
@@ -188,7 +188,7 @@ export function NewsReviewActions({
       setFeaturedImageUrl(payload.url)
       if (!featuredImageAlt.trim()) setFeaturedImageAlt(payload.alt ?? '')
       setSelectedFile(null)
-      setMessage('Afbeelding geüpload en geselecteerd.')
+      setMessage('Afbeelding geupload en geselecteerd.')
     } catch (uploadError) {
       const nextMessage = uploadError instanceof Error ? uploadError.message : 'Onbekende uploadfout'
       setError(nextMessage)
@@ -199,34 +199,34 @@ export function NewsReviewActions({
 
   return (
     <div className="space-y-4">
-      <div className="space-y-2 rounded-md border border-gray-200 p-3">
-        <p className="text-sm font-medium text-gray-900">Jouw input voor artikel</p>
-        <label className="block text-xs font-medium text-gray-600">
+      <div className="space-y-2 rounded-md border border-gray-200 p-3 dark:border-gray-800 dark:bg-gray-900/50">
+        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Jouw input voor artikel</p>
+        <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">
           Korte briefing (2-5 zinnen)
           <textarea
             value={brief}
             onChange={(event) => setBrief(event.target.value)}
             placeholder="Beschrijf wat je in het artikel wilt benadrukken..."
-            className="mt-1 min-h-[90px] w-full rounded-md border border-gray-300 p-2 text-sm leading-6 text-gray-800"
+            className="mt-1 min-h-[90px] w-full rounded-md border border-gray-300 bg-white p-2 text-sm leading-6 text-gray-800 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"
           />
         </label>
-        <label className="block text-xs font-medium text-gray-600">
+        <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">
           Context van de afbeelding (optioneel)
           <input
             value={imageNote}
             onChange={(event) => setImageNote(event.target.value)}
             placeholder="Wat laat de afbeelding zien?"
-            className="mt-1 h-9 w-full rounded-md border border-gray-300 px-2 text-sm"
+            className="mt-1 h-9 w-full rounded-md border border-gray-300 bg-white px-2 text-sm dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"
           />
         </label>
         <div className="space-y-2">
-          <label className="block text-xs font-medium text-gray-600">
+          <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">
             Upload afbeelding
             <input
               type="file"
               accept="image/png,image/jpeg,image/webp,image/gif"
               onChange={(event) => setSelectedFile(event.target.files?.[0] ?? null)}
-              className="mt-1 block w-full text-sm text-gray-700 file:mr-3 file:rounded-md file:border file:border-gray-300 file:bg-white file:px-3 file:py-1 file:text-sm"
+              className="mt-1 block w-full text-sm text-gray-700 dark:text-gray-300 file:mr-3 file:rounded-md file:border file:border-gray-300 file:bg-white dark:file:border-gray-700 dark:file:bg-gray-900 file:px-3 file:py-1 file:text-sm"
             />
           </label>
           <div className="flex flex-wrap gap-2">
@@ -240,48 +240,48 @@ export function NewsReviewActions({
               Schrijf standaard artikel
             </Button>
           </div>
-          {!canGenerateFromBrief ? <p className="text-xs text-gray-500">Vul minimaal 10 tekens briefing in om te genereren.</p> : null}
+          {!canGenerateFromBrief ? <p className="text-xs text-gray-500 dark:text-gray-400">Vul minimaal 10 tekens briefing in om te genereren.</p> : null}
         </div>
       </div>
 
       <div className="space-y-2">
-        <p className="text-sm font-medium text-gray-900">Artikeltekst</p>
+        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Artikeltekst</p>
         {!hasArticle ? (
-          <p className="text-xs text-gray-500">Nog geen artikeltekst. Gebruik hierboven de briefing-knop of standaard schrijf-knop.</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">Nog geen artikeltekst. Gebruik hierboven de briefing-knop of standaard schrijf-knop.</p>
         ) : (
           <>
             <textarea
               value={articleBody}
               onChange={(event) => setArticleBody(event.target.value)}
-              className="min-h-[260px] w-full rounded-md border border-gray-300 p-3 text-sm leading-6 text-gray-800"
+              className="min-h-[260px] w-full rounded-md border border-gray-300 bg-white p-3 text-sm leading-6 text-gray-800 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"
             />
-            <div className="space-y-2 rounded-md border border-gray-200 p-3">
-              <p className="text-sm font-medium text-gray-900">Afbeelding</p>
-              <label className="block text-xs font-medium text-gray-600">
+            <div className="space-y-2 rounded-md border border-gray-200 p-3 dark:border-gray-800 dark:bg-gray-900/50">
+              <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Afbeelding</p>
+              <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">
                 Afbeelding URL
                 <input
                   value={featuredImageUrl}
                   onChange={(event) => setFeaturedImageUrl(event.target.value)}
                   placeholder="https://... of /images/actueel/..."
-                  className="mt-1 h-9 w-full rounded-md border border-gray-300 px-2 text-sm"
+                  className="mt-1 h-9 w-full rounded-md border border-gray-300 bg-white px-2 text-sm dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"
                 />
               </label>
-              <label className="block text-xs font-medium text-gray-600">
+              <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">
                 Alt tekst
                 <input
                   value={featuredImageAlt}
                   onChange={(event) => setFeaturedImageAlt(event.target.value)}
                   placeholder="Beschrijving van de afbeelding"
-                  className="mt-1 h-9 w-full rounded-md border border-gray-300 px-2 text-sm"
+                  className="mt-1 h-9 w-full rounded-md border border-gray-300 bg-white px-2 text-sm dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"
                 />
               </label>
               {previewUrl ? (
-                <div className="overflow-hidden rounded-md border border-gray-200 bg-gray-50">
+                <div className="overflow-hidden rounded-md border border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-950">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={previewUrl} alt={previewAlt} className="h-44 w-full object-cover" />
                 </div>
               ) : (
-                <p className="text-xs text-gray-500">Nog geen afbeelding ingesteld. Bij publiceren wordt de standaard nieuwsafbeelding gebruikt.</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Nog geen afbeelding ingesteld. Bij publiceren wordt de standaard nieuwsafbeelding gebruikt.</p>
               )}
             </div>
             <div className="flex flex-wrap gap-2">
@@ -295,12 +295,12 @@ export function NewsReviewActions({
           </>
         )}
         {!canPublishOnKnownSite ? (
-          <p className="text-xs text-gray-500">Publiceren voor deze site is nog niet gekoppeld.</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">Publiceren voor deze site is nog niet gekoppeld.</p>
         ) : null}
       </div>
 
       <div className="space-y-2">
-        <p className="text-sm font-medium text-gray-900">Reviewstatus</p>
+        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Reviewstatus</p>
         <div className="flex flex-wrap gap-2">
           {STATUSES.map((review) => (
             <Button key={review.value} size="sm" variant={review.variant} onClick={() => updateStatus(review.value)} disabled={isPending || status === review.value}>
@@ -310,9 +310,10 @@ export function NewsReviewActions({
         </div>
       </div>
 
-      {isPending ? <p className="text-xs text-gray-500">Actie wordt uitgevoerd...</p> : null}
-      {message ? <p className="text-sm text-emerald-700">{message}</p> : null}
+      {isPending ? <p className="text-xs text-gray-500 dark:text-gray-400">Actie wordt uitgevoerd...</p> : null}
+      {message ? <p className="text-sm text-emerald-700 dark:text-emerald-400">{message}</p> : null}
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
     </div>
   )
 }
+

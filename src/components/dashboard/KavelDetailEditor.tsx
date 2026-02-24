@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { Button } from '@/components/ui/button'
 import type { KavelListing, ListingStatus } from '@/lib/kavels/types'
@@ -134,58 +134,58 @@ export function KavelDetailEditor({ listing }: KavelDetailEditorProps) {
   return (
     <div className="space-y-4">
       <div className="grid gap-3 md:grid-cols-2">
-        <label className="text-xs font-medium text-gray-600">
+        <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
           Adres
-          <input value={adres} onChange={(event) => setAdres(event.target.value)} className="mt-1 h-9 w-full rounded-md border border-gray-300 px-2 text-sm" />
+          <input value={adres} onChange={(event) => setAdres(event.target.value)} className="mt-1 h-9 w-full rounded-md border border-gray-300 bg-white px-2 text-sm dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100" />
         </label>
-        <label className="text-xs font-medium text-gray-600">
+        <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
           Postcode
-          <input value={postcode} onChange={(event) => setPostcode(event.target.value)} className="mt-1 h-9 w-full rounded-md border border-gray-300 px-2 text-sm" />
+          <input value={postcode} onChange={(event) => setPostcode(event.target.value)} className="mt-1 h-9 w-full rounded-md border border-gray-300 bg-white px-2 text-sm dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100" />
         </label>
-        <label className="text-xs font-medium text-gray-600">
+        <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
           Plaats
-          <input value={plaats} onChange={(event) => setPlaats(event.target.value)} className="mt-1 h-9 w-full rounded-md border border-gray-300 px-2 text-sm" />
+          <input value={plaats} onChange={(event) => setPlaats(event.target.value)} className="mt-1 h-9 w-full rounded-md border border-gray-300 bg-white px-2 text-sm dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100" />
         </label>
-        <label className="text-xs font-medium text-gray-600">
+        <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
           Provincie
-          <input value={provincie} onChange={(event) => setProvincie(event.target.value)} className="mt-1 h-9 w-full rounded-md border border-gray-300 px-2 text-sm" />
+          <input value={provincie} onChange={(event) => setProvincie(event.target.value)} className="mt-1 h-9 w-full rounded-md border border-gray-300 bg-white px-2 text-sm dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100" />
         </label>
-        <label className="text-xs font-medium text-gray-600">
+        <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
           Vraagprijs (EUR)
-          <input value={prijs} onChange={(event) => setPrijs(event.target.value)} inputMode="decimal" className="mt-1 h-9 w-full rounded-md border border-gray-300 px-2 text-sm" />
+          <input value={prijs} onChange={(event) => setPrijs(event.target.value)} inputMode="decimal" className="mt-1 h-9 w-full rounded-md border border-gray-300 bg-white px-2 text-sm dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100" />
         </label>
-        <label className="text-xs font-medium text-gray-600">
+        <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
           Oppervlakte (m2)
           <input
             value={oppervlakte}
             onChange={(event) => setOppervlakte(event.target.value)}
             inputMode="decimal"
-            className="mt-1 h-9 w-full rounded-md border border-gray-300 px-2 text-sm"
+            className="mt-1 h-9 w-full rounded-md border border-gray-300 bg-white px-2 text-sm dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"
           />
         </label>
       </div>
 
       <div className="grid gap-3 md:grid-cols-2">
-        <label className="text-xs font-medium text-gray-600">
+        <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
           Bron URL
-          <input value={sourceUrl} onChange={(event) => setSourceUrl(event.target.value)} className="mt-1 h-9 w-full rounded-md border border-gray-300 px-2 text-sm" />
+          <input value={sourceUrl} onChange={(event) => setSourceUrl(event.target.value)} className="mt-1 h-9 w-full rounded-md border border-gray-300 bg-white px-2 text-sm dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100" />
         </label>
-        <label className="text-xs font-medium text-gray-600">
+        <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
           Published sites (comma separated)
           <input
             value={publishedSites}
             onChange={(event) => setPublishedSites(event.target.value)}
             placeholder="zwijsen.net, kavelarchitect.nl"
-            className="mt-1 h-9 w-full rounded-md border border-gray-300 px-2 text-sm"
+            className="mt-1 h-9 w-full rounded-md border border-gray-300 bg-white px-2 text-sm dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"
           />
         </label>
-        <label className="text-xs font-medium text-gray-600">
+        <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
           Image URL
-          <input value={imageUrl} onChange={(event) => setImageUrl(event.target.value)} className="mt-1 h-9 w-full rounded-md border border-gray-300 px-2 text-sm" />
+          <input value={imageUrl} onChange={(event) => setImageUrl(event.target.value)} className="mt-1 h-9 w-full rounded-md border border-gray-300 bg-white px-2 text-sm dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100" />
         </label>
-        <label className="text-xs font-medium text-gray-600">
+        <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
           Map URL
-          <input value={mapUrl} onChange={(event) => setMapUrl(event.target.value)} className="mt-1 h-9 w-full rounded-md border border-gray-300 px-2 text-sm" />
+          <input value={mapUrl} onChange={(event) => setMapUrl(event.target.value)} className="mt-1 h-9 w-full rounded-md border border-gray-300 bg-white px-2 text-sm dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100" />
         </label>
       </div>
 
@@ -194,27 +194,27 @@ export function KavelDetailEditor({ listing }: KavelDetailEditorProps) {
         <PreviewCard title="Kaart" url={mapPreview} />
       </div>
 
-      <label className="block text-xs font-medium text-gray-600">
+      <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">
         Specs JSON
-        <textarea value={specsText} onChange={(event) => setSpecsText(event.target.value)} className="mt-1 min-h-[160px] w-full rounded-md border border-gray-300 p-2 text-xs font-mono" />
+        <textarea value={specsText} onChange={(event) => setSpecsText(event.target.value)} className="mt-1 min-h-[160px] w-full rounded-md border border-gray-300 bg-white p-2 text-xs font-mono dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100" />
       </label>
 
       <div className="grid gap-3 md:grid-cols-2">
-        <label className="text-xs font-medium text-gray-600">
+        <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
           SEO summary KavelArchitect
-          <textarea value={seoSummaryKa} onChange={(event) => setSeoSummaryKa(event.target.value)} className="mt-1 min-h-[90px] w-full rounded-md border border-gray-300 p-2 text-sm" />
+          <textarea value={seoSummaryKa} onChange={(event) => setSeoSummaryKa(event.target.value)} className="mt-1 min-h-[90px] w-full rounded-md border border-gray-300 bg-white p-2 text-sm dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100" />
         </label>
-        <label className="text-xs font-medium text-gray-600">
+        <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
           SEO summary Zwijsen
-          <textarea value={seoSummaryZw} onChange={(event) => setSeoSummaryZw(event.target.value)} className="mt-1 min-h-[90px] w-full rounded-md border border-gray-300 p-2 text-sm" />
+          <textarea value={seoSummaryZw} onChange={(event) => setSeoSummaryZw(event.target.value)} className="mt-1 min-h-[90px] w-full rounded-md border border-gray-300 bg-white p-2 text-sm dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100" />
         </label>
-        <label className="text-xs font-medium text-gray-600">
+        <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
           SEO article KavelArchitect (HTML)
-          <textarea value={seoArticleHtmlKa} onChange={(event) => setSeoArticleHtmlKa(event.target.value)} className="mt-1 min-h-[220px] w-full rounded-md border border-gray-300 p-2 text-xs font-mono" />
+          <textarea value={seoArticleHtmlKa} onChange={(event) => setSeoArticleHtmlKa(event.target.value)} className="mt-1 min-h-[220px] w-full rounded-md border border-gray-300 bg-white p-2 text-xs font-mono dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100" />
         </label>
-        <label className="text-xs font-medium text-gray-600">
+        <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
           SEO article Zwijsen (HTML)
-          <textarea value={seoArticleHtmlZw} onChange={(event) => setSeoArticleHtmlZw(event.target.value)} className="mt-1 min-h-[220px] w-full rounded-md border border-gray-300 p-2 text-xs font-mono" />
+          <textarea value={seoArticleHtmlZw} onChange={(event) => setSeoArticleHtmlZw(event.target.value)} className="mt-1 min-h-[220px] w-full rounded-md border border-gray-300 bg-white p-2 text-xs font-mono dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100" />
         </label>
       </div>
 
@@ -236,8 +236,8 @@ export function KavelDetailEditor({ listing }: KavelDetailEditorProps) {
         </Button>
       </div>
 
-      {isPending ? <p className="text-xs text-gray-500">Bezig...</p> : null}
-      {message ? <p className="text-sm text-emerald-700">{message}</p> : null}
+      {isPending ? <p className="text-xs text-gray-500 dark:text-gray-400">Bezig...</p> : null}
+      {message ? <p className="text-sm text-emerald-700 dark:text-emerald-400">{message}</p> : null}
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
     </div>
   )
@@ -247,18 +247,18 @@ function PreviewCard({ title, url }: { title: string; url: string }) {
   const showImage = isLikelyImage(url)
 
   return (
-    <div className="space-y-2 rounded-md border border-gray-200 p-3">
-      <p className="text-sm font-medium text-gray-900">{title}</p>
-      {!url ? <p className="text-xs text-gray-500">Geen URL ingesteld.</p> : null}
+    <div className="space-y-2 rounded-md border border-gray-200 p-3 dark:border-gray-800 dark:bg-gray-900/50">
+      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{title}</p>
+      {!url ? <p className="text-xs text-gray-500 dark:text-gray-400">Geen URL ingesteld.</p> : null}
       {url ? (
-        <a href={url} target="_blank" rel="noreferrer" className="text-xs font-medium text-orange-600 hover:text-orange-700">
+        <a href={url} target="_blank" rel="noreferrer" className="text-xs font-medium text-orange-600 hover:text-orange-700 dark:text-orange-300 dark:hover:text-orange-200">
           Open in nieuw tabblad
         </a>
       ) : null}
       {url && showImage ? (
         <a href={url} target="_blank" rel="noreferrer">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={url} alt={title} className="h-48 w-full rounded-md border border-gray-200 object-cover" />
+          <img src={url} alt={title} className="h-48 w-full rounded-md border border-gray-200 object-cover dark:border-gray-800" />
         </a>
       ) : null}
     </div>
@@ -269,4 +269,5 @@ function isLikelyImage(url: string) {
   const normalized = url.trim().toLowerCase()
   return normalized.endsWith('.jpg') || normalized.endsWith('.jpeg') || normalized.endsWith('.png') || normalized.endsWith('.webp') || normalized.endsWith('.gif')
 }
+
 

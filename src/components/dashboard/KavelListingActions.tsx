@@ -64,10 +64,9 @@ export function KavelListingActions({ id, status }: KavelListingActionsProps) {
           Skip
         </Button>
       </div>
-      {isPending ? <p className="text-right text-xs text-gray-500">Bezig...</p> : null}
-      {message ? <p className="text-right text-xs text-emerald-700">{message}</p> : null}
+      {isPending ? <p className="text-right text-xs text-gray-500 dark:text-gray-400">Bezig...</p> : null}
+      {message ? <p className="text-right text-xs text-emerald-700 dark:text-emerald-400">{message}</p> : null}
       {error ? <p className="text-right text-xs text-red-600">{error}</p> : null}
     </div>
   )
 }
-

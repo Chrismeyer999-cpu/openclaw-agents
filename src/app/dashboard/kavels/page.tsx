@@ -38,8 +38,8 @@ export default async function DashboardKavelsPage({ searchParams }: DashboardKav
   return (
     <section className="mx-auto max-w-7xl space-y-6">
       <header className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight text-gray-900">Kavels Center</h1>
-        <p className="text-sm text-gray-500">
+        <h1 className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-gray-100">Kavels Center</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           Centrale pipeline voor Gmail/Funda en OpenClaw ingest, publicatie in Supabase en automatische distributie naar de Next.js sites.
         </p>
       </header>
@@ -54,16 +54,16 @@ export default async function DashboardKavelsPage({ searchParams }: DashboardKav
       <KavelSyncActions />
       <KavelManualAddForm />
 
-      <div className="space-y-3 rounded-lg border border-gray-200 bg-white p-4">
+      <div className="space-y-3 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
         <div className="space-y-1">
-          <p className="text-sm font-medium text-gray-900">Listings</p>
-          <p className="text-xs text-gray-500">Publiceren zet de kavel in de `kavels` tabel met site-specifieke copy voor `zwijsen.net` en `kavelarchitect.nl`.</p>
+          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Listings</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">Publiceren zet de kavel in de `kavels` tabel met site-specifieke copy voor `zwijsen.net` en `kavelarchitect.nl`.</p>
         </div>
 
         <form className="grid gap-3 md:grid-cols-4">
-          <label className="text-xs font-medium text-gray-600">
+          <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
             Status
-            <select name="status" defaultValue={statusFilter} className="mt-1 h-9 w-full rounded-md border border-gray-300 px-2 text-sm">
+            <select name="status" defaultValue={statusFilter} className="mt-1 h-9 w-full rounded-md border border-gray-300 bg-white px-2 text-sm dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100">
               {LISTING_STATUSES.map((status) => (
                 <option key={status} value={status}>
                   {status}
@@ -71,9 +71,9 @@ export default async function DashboardKavelsPage({ searchParams }: DashboardKav
               ))}
             </select>
           </label>
-          <label className="text-xs font-medium text-gray-600">
+          <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
             Bron
-            <select name="source" defaultValue={sourceFilter} className="mt-1 h-9 w-full rounded-md border border-gray-300 px-2 text-sm">
+            <select name="source" defaultValue={sourceFilter} className="mt-1 h-9 w-full rounded-md border border-gray-300 bg-white px-2 text-sm dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100">
               {LISTING_SOURCES.map((source) => (
                 <option key={source} value={source}>
                   {source}
@@ -81,16 +81,16 @@ export default async function DashboardKavelsPage({ searchParams }: DashboardKav
               ))}
             </select>
           </label>
-          <label className="text-xs font-medium text-gray-600 md:col-span-2">
+          <label className="text-xs font-medium text-gray-600 dark:text-gray-300 md:col-span-2">
             Zoek
             <div className="mt-1 flex gap-2">
               <input
                 name="q"
                 defaultValue={queryFilter}
                 placeholder="adres, plaats, url..."
-                className="h-9 w-full rounded-md border border-gray-300 px-2 text-sm"
+                className="h-9 w-full rounded-md border border-gray-300 bg-white px-2 text-sm dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"
               />
-              <button type="submit" className="inline-flex h-9 items-center rounded-md border border-gray-300 px-3 text-sm">
+              <button type="submit" className="inline-flex h-9 items-center rounded-md border border-gray-300 bg-white px-3 text-sm dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100">
                 Filter
               </button>
             </div>
@@ -111,7 +111,7 @@ export default async function DashboardKavelsPage({ searchParams }: DashboardKav
           <TableBody>
             {listings.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-sm text-gray-500">
+                <TableCell colSpan={6} className="text-center text-sm text-gray-500 dark:text-gray-400">
                   Geen kavels gevonden met deze filters.
                 </TableCell>
               </TableRow>
@@ -120,15 +120,15 @@ export default async function DashboardKavelsPage({ searchParams }: DashboardKav
                 <TableRow key={listing.id}>
                   <TableCell>
                     <div className="space-y-1">
-                      <Link href={`/dashboard/kavels/${listing.id}`} className="text-sm font-medium text-orange-700 hover:text-orange-800">
+                      <Link href={`/dashboard/kavels/${listing.id}`} className="text-sm font-medium text-orange-700 hover:text-orange-800 dark:text-orange-300 dark:hover:text-orange-200">
                         {listing.adres ?? listing.kavelId}
                       </Link>
-                      <p className="text-xs text-gray-500">{listing.kavelId}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{listing.kavelId}</p>
                     </div>
                   </TableCell>
                   <TableCell>
-                    <p className="text-sm text-gray-800">{[listing.postcode, listing.plaats].filter(Boolean).join(' ') || '-'}</p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-sm text-gray-800 dark:text-gray-200">{[listing.postcode, listing.plaats].filter(Boolean).join(' ') || '-'}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
                       {listing.prijs ? `EUR ${new Intl.NumberFormat('nl-NL').format(listing.prijs)}` : 'Prijs onbekend'}
                       {' - '}
                       {listing.oppervlakte ? `${new Intl.NumberFormat('nl-NL').format(listing.oppervlakte)} m2` : 'Oppervlakte onbekend'}
@@ -140,7 +140,7 @@ export default async function DashboardKavelsPage({ searchParams }: DashboardKav
                   <TableCell>
                     <Badge variant={listingStatusVariant(listing.ingestStatus)}>{listing.ingestStatus}</Badge>
                   </TableCell>
-                  <TableCell className="text-right text-xs text-gray-500">{new Date(listing.createdAt).toLocaleDateString('nl-NL')}</TableCell>
+                  <TableCell className="text-right text-xs text-gray-500 dark:text-gray-400">{new Date(listing.createdAt).toLocaleDateString('nl-NL')}</TableCell>
                   <TableCell className="text-right">
                     <KavelListingActions id={listing.id} status={listing.ingestStatus} />
                   </TableCell>
@@ -151,10 +151,10 @@ export default async function DashboardKavelsPage({ searchParams }: DashboardKav
         </Table>
       </div>
 
-      <div className="space-y-3 rounded-lg border border-gray-200 bg-white p-4">
+      <div className="space-y-3 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
         <div className="space-y-1">
-          <p className="text-sm font-medium text-gray-900">Sync jobs</p>
-          <p className="text-xs text-gray-500">Queue-overzicht voor Gmail/Funda en OpenClaw sync.</p>
+          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Sync jobs</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">Queue-overzicht voor Gmail/Funda en OpenClaw sync.</p>
         </div>
         <Table>
           <TableHeader>
@@ -169,7 +169,7 @@ export default async function DashboardKavelsPage({ searchParams }: DashboardKav
           <TableBody>
             {syncJobs.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-sm text-gray-500">
+                <TableCell colSpan={5} className="text-center text-sm text-gray-500 dark:text-gray-400">
                   Nog geen sync jobs.
                 </TableCell>
               </TableRow>
@@ -182,7 +182,7 @@ export default async function DashboardKavelsPage({ searchParams }: DashboardKav
                   </TableCell>
                   <TableCell>{job.triggerType}</TableCell>
                   <TableCell className="max-w-[300px] truncate">{job.note ?? '-'}</TableCell>
-                  <TableCell className="text-right text-xs text-gray-500">{new Date(job.createdAt).toLocaleString('nl-NL')}</TableCell>
+                  <TableCell className="text-right text-xs text-gray-500 dark:text-gray-400">{new Date(job.createdAt).toLocaleString('nl-NL')}</TableCell>
                 </TableRow>
               ))
             )}
@@ -192,10 +192,10 @@ export default async function DashboardKavelsPage({ searchParams }: DashboardKav
 
       <KavelAlertSubscriberForm />
 
-      <div className="space-y-3 rounded-lg border border-gray-200 bg-white p-4">
+      <div className="space-y-3 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
         <div className="space-y-1">
-          <p className="text-sm font-medium text-gray-900">KavelAlert inschrijvingen</p>
-          <p className="text-xs text-gray-500">Beheer van ingeschreven leads voor alerts en (optioneel) early access kavelrapport.</p>
+          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">KavelAlert inschrijvingen</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">Beheer van ingeschreven leads voor alerts en (optioneel) early access kavelrapport.</p>
         </div>
         <Table>
           <TableHeader>
@@ -209,7 +209,7 @@ export default async function DashboardKavelsPage({ searchParams }: DashboardKav
           <TableBody>
             {subscribers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center text-sm text-gray-500">
+                <TableCell colSpan={4} className="text-center text-sm text-gray-500 dark:text-gray-400">
                   Nog geen inschrijvingen.
                 </TableCell>
               </TableRow>
@@ -218,20 +218,20 @@ export default async function DashboardKavelsPage({ searchParams }: DashboardKav
                 <TableRow key={subscriber.id}>
                   <TableCell>
                     <div className="space-y-1">
-                      <p className="text-sm font-medium text-gray-900">{subscriber.naam ?? subscriber.email}</p>
-                      <p className="text-xs text-gray-500">{subscriber.email}</p>
-                      {subscriber.telefoonnummer ? <p className="text-xs text-gray-500">{subscriber.telefoonnummer}</p> : null}
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{subscriber.naam ?? subscriber.email}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{subscriber.email}</p>
+                      {subscriber.telefoonnummer ? <p className="text-xs text-gray-500 dark:text-gray-400">{subscriber.telefoonnummer}</p> : null}
                     </div>
                   </TableCell>
                   <TableCell>
-                    <p className="text-xs text-gray-700">
+                    <p className="text-xs text-gray-700 dark:text-gray-300">
                       Provincies: {subscriber.provincies.length > 0 ? subscriber.provincies.join(', ') : 'geen'}
                     </p>
-                    <p className="text-xs text-gray-700">
+                    <p className="text-xs text-gray-700 dark:text-gray-300">
                       Budget: {subscriber.minPrijs ? new Intl.NumberFormat('nl-NL').format(subscriber.minPrijs) : '-'} tot{' '}
                       {subscriber.maxPrijs ? new Intl.NumberFormat('nl-NL').format(subscriber.maxPrijs) : '-'}
                     </p>
-                    <p className="text-xs text-gray-700">
+                    <p className="text-xs text-gray-700 dark:text-gray-300">
                       Min m2: {subscriber.minOppervlakte ?? '-'} | Early access: {subscriber.earlyAccessRapport ? 'ja' : 'nee'}
                     </p>
                   </TableCell>

@@ -38,7 +38,7 @@ export default async function WorkspaceLlmPage({
   }
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white">
+    <div className="rounded-lg border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
       <Table>
         <TableHeader>
           <TableRow>
@@ -52,7 +52,7 @@ export default async function WorkspaceLlmPage({
         <TableBody>
           {mentions.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={5} className="text-center text-sm text-gray-500">
+              <TableCell colSpan={5} className="text-center text-sm text-gray-500 dark:text-gray-400">
                 Nog geen LLM mentions in deze workspace.
               </TableCell>
             </TableRow>
@@ -65,7 +65,7 @@ export default async function WorkspaceLlmPage({
                 <TableCell>
                   <Badge variant={mention.mentioned ? 'secondary' : 'outline'}>{mention.mentioned ? 'Ja' : 'Nee'}</Badge>
                 </TableCell>
-                <TableCell className="text-right text-xs text-gray-500">
+                <TableCell className="text-right text-xs text-gray-500 dark:text-gray-400">
                   {new Date(mention.checked_at).toLocaleDateString('nl-NL')}
                 </TableCell>
               </TableRow>

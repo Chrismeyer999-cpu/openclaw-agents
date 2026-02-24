@@ -57,62 +57,62 @@ export function KavelManualAddForm() {
   }
 
   return (
-    <div className="space-y-3 rounded-lg border border-gray-200 bg-white p-4">
-      <p className="text-sm font-medium text-gray-900">Kavel handmatig toevoegen</p>
+    <div className="space-y-3 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
+      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Kavel handmatig toevoegen</p>
       <div className="grid gap-2 md:grid-cols-3">
-        <label className="text-xs font-medium text-gray-600">
+        <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
           Bron
           <select
             value={sourceType}
             onChange={(event) => setSourceType(event.target.value as 'manual' | 'openclaw' | 'gmail_funda')}
-            className="mt-1 h-9 w-full rounded-md border border-gray-300 px-2 text-sm"
+            className="mt-1 h-9 w-full rounded-md border border-gray-300 bg-white px-2 text-sm dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"
           >
             <option value="manual">Handmatig</option>
             <option value="openclaw">OpenClaw</option>
             <option value="gmail_funda">Gmail/Funda</option>
           </select>
         </label>
-        <label className="text-xs font-medium text-gray-600 md:col-span-2">
+        <label className="text-xs font-medium text-gray-600 dark:text-gray-300 md:col-span-2">
           Bron URL
           <input
             value={sourceUrl}
             onChange={(event) => setSourceUrl(event.target.value)}
             placeholder="https://www.funda.nl/..."
-            className="mt-1 h-9 w-full rounded-md border border-gray-300 px-2 text-sm"
+            className="mt-1 h-9 w-full rounded-md border border-gray-300 bg-white px-2 text-sm dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"
           />
         </label>
-        <label className="text-xs font-medium text-gray-600 md:col-span-2">
+        <label className="text-xs font-medium text-gray-600 dark:text-gray-300 md:col-span-2">
           Adres
-          <input value={adres} onChange={(event) => setAdres(event.target.value)} className="mt-1 h-9 w-full rounded-md border border-gray-300 px-2 text-sm" />
+          <input value={adres} onChange={(event) => setAdres(event.target.value)} className="mt-1 h-9 w-full rounded-md border border-gray-300 bg-white px-2 text-sm dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100" />
         </label>
-        <label className="text-xs font-medium text-gray-600">
+        <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
           Postcode
-          <input value={postcode} onChange={(event) => setPostcode(event.target.value)} className="mt-1 h-9 w-full rounded-md border border-gray-300 px-2 text-sm" />
+          <input value={postcode} onChange={(event) => setPostcode(event.target.value)} className="mt-1 h-9 w-full rounded-md border border-gray-300 bg-white px-2 text-sm dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100" />
         </label>
-        <label className="text-xs font-medium text-gray-600">
+        <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
           Plaats
-          <input value={plaats} onChange={(event) => setPlaats(event.target.value)} className="mt-1 h-9 w-full rounded-md border border-gray-300 px-2 text-sm" />
+          <input value={plaats} onChange={(event) => setPlaats(event.target.value)} className="mt-1 h-9 w-full rounded-md border border-gray-300 bg-white px-2 text-sm dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100" />
         </label>
-        <label className="text-xs font-medium text-gray-600">
+        <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
           Provincie
-          <input value={provincie} onChange={(event) => setProvincie(event.target.value)} className="mt-1 h-9 w-full rounded-md border border-gray-300 px-2 text-sm" />
+          <input value={provincie} onChange={(event) => setProvincie(event.target.value)} className="mt-1 h-9 w-full rounded-md border border-gray-300 bg-white px-2 text-sm dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100" />
         </label>
-        <label className="text-xs font-medium text-gray-600">
+        <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
           Vraagprijs (EUR)
           <input
             value={prijs}
             onChange={(event) => setPrijs(event.target.value)}
             inputMode="decimal"
-            className="mt-1 h-9 w-full rounded-md border border-gray-300 px-2 text-sm"
+            className="mt-1 h-9 w-full rounded-md border border-gray-300 bg-white px-2 text-sm dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"
           />
         </label>
-        <label className="text-xs font-medium text-gray-600">
+        <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
           Oppervlakte (m2)
           <input
             value={oppervlakte}
             onChange={(event) => setOppervlakte(event.target.value)}
             inputMode="decimal"
-            className="mt-1 h-9 w-full rounded-md border border-gray-300 px-2 text-sm"
+            className="mt-1 h-9 w-full rounded-md border border-gray-300 bg-white px-2 text-sm dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"
           />
         </label>
       </div>
@@ -120,11 +120,10 @@ export function KavelManualAddForm() {
         <Button size="sm" onClick={submit} disabled={isPending}>
           Voeg toe aan pending
         </Button>
-        {isPending ? <p className="text-xs text-gray-500">Opslaan...</p> : null}
+        {isPending ? <p className="text-xs text-gray-500 dark:text-gray-400">Opslaan...</p> : null}
       </div>
-      {message ? <p className="text-xs text-emerald-700">{message}</p> : null}
+      {message ? <p className="text-xs text-emerald-700 dark:text-emerald-400">{message}</p> : null}
       {error ? <p className="text-xs text-red-600">{error}</p> : null}
     </div>
   )
 }
-

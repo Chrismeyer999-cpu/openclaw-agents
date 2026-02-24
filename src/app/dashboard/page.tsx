@@ -11,9 +11,9 @@ export default async function DashboardPage() {
   return (
     <section className="mx-auto max-w-7xl space-y-6">
       <header className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight text-gray-900">Dashboard Overview</h1>
-        <p className="text-sm text-gray-500">Live overzicht van SEO- en LLM-signalen over alle workspaces.</p>
-        <Link href="/dashboard/nieuws" className="inline-flex text-sm font-medium text-orange-600 hover:text-orange-700">
+        <h1 className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-gray-100">Dashboard Overview</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Live overzicht van SEO- en LLM-signalen over alle workspaces.</p>
+        <Link href="/dashboard/nieuws" className="inline-flex text-sm font-medium text-orange-600 hover:text-orange-700 dark:text-orange-300 dark:hover:text-orange-200">
           Open centraal Nieuws Center
         </Link>
       </header>
@@ -45,7 +45,7 @@ export default async function DashboardPage() {
                   <Badge variant={workspace.pendingNieuws > 0 ? 'destructive' : 'secondary'}>
                     Pending nieuws: {workspace.pendingNieuws}
                   </Badge>
-                  <Link href={`/dashboard/${workspace.id}`} className="text-sm font-medium text-orange-600 hover:text-orange-700">
+                  <Link href={`/dashboard/${workspace.id}`} className="text-sm font-medium text-orange-600 hover:text-orange-700 dark:text-orange-300 dark:hover:text-orange-200">
                     Open workspace
                   </Link>
                 </div>
@@ -73,7 +73,7 @@ export default async function DashboardPage() {
               <TableBody>
                 {overview.topPages.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={3} className="text-center text-sm text-gray-500">
+                    <TableCell colSpan={3} className="text-center text-sm text-gray-500 dark:text-gray-400">
                       Nog geen GSC-data gevonden.
                     </TableCell>
                   </TableRow>
@@ -107,7 +107,7 @@ export default async function DashboardPage() {
               <TableBody>
                 {overview.pendingItems.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={3} className="text-center text-sm text-gray-500">
+                    <TableCell colSpan={3} className="text-center text-sm text-gray-500 dark:text-gray-400">
                       Geen pending nieuwsitems.
                     </TableCell>
                   </TableRow>
@@ -116,7 +116,7 @@ export default async function DashboardPage() {
                     <TableRow key={item.id}>
                       <TableCell className="max-w-[260px] truncate">{item.title}</TableCell>
                       <TableCell>{item.domain}</TableCell>
-                      <TableCell className="text-right text-xs text-gray-500">
+                      <TableCell className="text-right text-xs text-gray-500 dark:text-gray-400">
                         {new Date(item.created_at).toLocaleDateString('nl-NL')}
                       </TableCell>
                     </TableRow>
@@ -139,7 +139,7 @@ function MetricCard({ icon, label, value }: { icon: React.ReactNode; label: stri
         {icon}
       </CardHeader>
       <CardContent>
-        <p className="text-2xl font-semibold text-gray-900">{value}</p>
+        <p className="text-2xl font-semibold text-gray-900 dark:text-gray-100">{value}</p>
       </CardContent>
     </Card>
   )
@@ -147,9 +147,9 @@ function MetricCard({ icon, label, value }: { icon: React.ReactNode; label: stri
 
 function StatItem({ label, value }: { label: string; value: number | string }) {
   return (
-    <div className="rounded-md border border-gray-200 p-2">
-      <p className="text-xs text-gray-500">{label}</p>
-      <p className="text-sm font-semibold text-gray-900">{value}</p>
+    <div className="rounded-md border border-gray-200 p-2 dark:border-gray-800">
+      <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
+      <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{value}</p>
     </div>
   )
 }

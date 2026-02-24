@@ -41,9 +41,9 @@ export function KavelSyncActions() {
   }
 
   return (
-    <div className="space-y-2 rounded-lg border border-gray-200 bg-white p-4">
-      <p className="text-sm font-medium text-gray-900">Bronnen syncen</p>
-      <p className="text-xs text-gray-500">Plan hier handmatig sync-jobs in. De worker kan deze jobs daarna oppakken.</p>
+    <div className="space-y-2 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
+      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Bronnen syncen</p>
+      <p className="text-xs text-gray-500 dark:text-gray-400">Plan hier handmatig sync-jobs in. De worker kan deze jobs daarna oppakken.</p>
       <div className="flex flex-wrap gap-2">
         <Button size="sm" variant="outline" onClick={() => queueSync('gmail_funda')} disabled={isPending}>
           Check Funda via Gmail
@@ -52,8 +52,8 @@ export function KavelSyncActions() {
           Import vanuit OpenClaw
         </Button>
       </div>
-      {isPending ? <p className="text-xs text-gray-500">Actie wordt uitgevoerd...</p> : null}
-      {message ? <p className="text-xs text-emerald-700">{message}</p> : null}
+      {isPending ? <p className="text-xs text-gray-500 dark:text-gray-400">Actie wordt uitgevoerd...</p> : null}
+      {message ? <p className="text-xs text-emerald-700 dark:text-emerald-400">{message}</p> : null}
       {error ? <p className="text-xs text-red-600">{error}</p> : null}
     </div>
   )
