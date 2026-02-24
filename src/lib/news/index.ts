@@ -1,6 +1,8 @@
 import { generateArticleFromBrief } from '@/lib/news/articleFromBrief'
 import { createDraftArticleBody } from '@/lib/news/draftArticle'
 import { deleteAgentNewsById, getAgentNewsById, listAgentNews, updateAgentNewsBody, updateAgentNewsContent, updateAgentNewsStatus } from '@/lib/news/agentNews'
+import { publishToBrikxNieuws } from '@/lib/news/brikxPublisher'
+import { publishToKavelarchitectNieuws } from '@/lib/news/kavelarchitectPublisher'
 import { listSeoNews, getSeoNewsById } from '@/lib/news/seoNews'
 import type { NewsFilters, NewsSourceMode, UnifiedNewsItem } from '@/lib/news/types'
 import { publishToZwijsenNieuws } from '@/lib/news/zwijsenPublisher'
@@ -209,11 +211,7 @@ export async function publishNewsArticle(
     )
   }
 
-  if (item.site !== 'zwijsen.net') {
-    throw new Error(`Publiceren naar ${item.site} is nog niet gekoppeld. Start is nu alleen zwijsen.net.`)
-  }
-
-  const publication = await publishToZwijsenNieuws({
+  const publicationInput = {
     id: item.id,
     title: item.title,
     summary: item.summary,
@@ -222,7 +220,19 @@ export async function publishNewsArticle(
     featuredImageAlt: nextFeaturedImageAlt,
     sourceType: item.sourceType,
     sourceUrl: item.sourceUrl
-  })
+  }
+
+  const normalizedSite = normalizeSiteDomain(item.site)
+  let publication
+  if (normalizedSite === 'zwijsen.net') {
+    publication = await publishToZwijsenNieuws(publicationInput)
+  } else if (normalizedSite === 'brikxai.nl') {
+    publication = await publishToBrikxNieuws(publicationInput)
+  } else if (normalizedSite === 'kavelarchitect.nl') {
+    publication = await publishToKavelarchitectNieuws(publicationInput)
+  } else {
+    throw new Error(`Publiceren naar ${item.site} is nog niet gekoppeld.`)
+  }
 
   await updateNewsStatus(id, 'published', resolvedSource)
   return {
@@ -284,4 +294,13 @@ function normalizeOptionalText(value: string | null | undefined) {
   if (value === null) return null
   const trimmed = value.trim()
   return trimmed.length > 0 ? trimmed : null
+}
+
+function normalizeSiteDomain(site: string) {
+  return site
+    .trim()
+    .toLowerCase()
+    .replace(/^https?:\/\//, '')
+    .replace(/^www\./, '')
+    .replace(/\/.*$/, '')
 }

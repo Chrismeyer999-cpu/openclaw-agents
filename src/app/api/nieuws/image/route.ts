@@ -13,6 +13,11 @@ const ALLOWED_MIME_TYPES = new Map<string, string>([
 ])
 
 const DEFAULT_ZWIJSEN_REPO_PATH = process.platform === 'win32' ? 'E:\\zwijsen' : '/mnt/e/zwijsen'
+const DEFAULT_BRIKX_REPO_PATH =
+  process.platform === 'win32' ? 'E:\\brikx\\Brikxai\\brikx-wizard' : '/mnt/e/brikx/Brikxai/brikx-wizard'
+const DEFAULT_KAVELARCHITECT_REPO_PATH = process.platform === 'win32' ? 'E:\\Funda Wordpress' : '/mnt/e/Funda Wordpress'
+
+type SupportedSite = 'zwijsen.net' | 'brikxai.nl' | 'kavelarchitect.nl'
 
 async function requireUser() {
   const supabase = await createClient()
@@ -50,13 +55,18 @@ export async function POST(request: Request) {
   const today = new Date()
   const year = String(today.getFullYear())
   const month = String(today.getMonth() + 1).padStart(2, '0')
-  const repoRoot = process.env.ZWIJSEN_REPO_PATH?.trim() || DEFAULT_ZWIJSEN_REPO_PATH
-  const targetDir = path.join(repoRoot, 'public', 'images', 'actueel', year, month)
+  const siteInput = asOptionalString(formData.get('site'))
+  const targetConfig = resolveUploadTarget(siteInput)
+  if (!targetConfig) {
+    return NextResponse.json({ error: `Uploaden voor site '${siteInput ?? 'onbekend'}' wordt niet ondersteund.` }, { status: 400 })
+  }
+
+  const targetDir = path.join(targetConfig.repoRoot, 'public', ...targetConfig.pathParts, year, month)
   const altFallback = fileNameToAlt(fileField.name)
   const baseName = toSlug(path.parse(fileField.name).name).slice(0, 50) || 'nieuwsbeeld'
   const finalName = `${Date.now()}-${baseName}-${randomUUID().slice(0, 8)}.${extension}`
   const absolutePath = path.join(targetDir, finalName)
-  const publicUrl = `/images/actueel/${year}/${month}/${finalName}`
+  const publicUrl = `/${targetConfig.pathParts.join('/')}/${year}/${month}/${finalName}`
 
   try {
     await fs.mkdir(targetDir, { recursive: true })
@@ -70,8 +80,50 @@ export async function POST(request: Request) {
   return NextResponse.json({
     url: publicUrl,
     alt: altFallback,
-    bytes: fileField.size
+    bytes: fileField.size,
+    site: targetConfig.site
   })
+}
+
+function resolveUploadTarget(siteInput: string | null) {
+  const normalized = normalizeSiteDomain(siteInput)
+  if (normalized === 'zwijsen.net') {
+    return {
+      site: normalized,
+      repoRoot: process.env.ZWIJSEN_REPO_PATH?.trim() || DEFAULT_ZWIJSEN_REPO_PATH,
+      pathParts: ['images', 'actueel']
+    }
+  }
+  if (normalized === 'brikxai.nl') {
+    return {
+      site: normalized,
+      repoRoot: process.env.BRIKX_REPO_PATH?.trim() || DEFAULT_BRIKX_REPO_PATH,
+      pathParts: ['images', 'nieuws']
+    }
+  }
+  if (normalized === 'kavelarchitect.nl') {
+    return {
+      site: normalized,
+      repoRoot: process.env.KAVELARCHITECT_REPO_PATH?.trim() || DEFAULT_KAVELARCHITECT_REPO_PATH,
+      pathParts: ['images', 'nieuws']
+    }
+  }
+  return null
+}
+
+function normalizeSiteDomain(siteInput: string | null): SupportedSite | null {
+  if (!siteInput) return 'zwijsen.net'
+  const normalized = siteInput
+    .trim()
+    .toLowerCase()
+    .replace(/^https?:\/\//, '')
+    .replace(/^www\./, '')
+    .replace(/\/.*$/, '')
+
+  if (normalized === 'zwijsen.net') return normalized
+  if (normalized === 'brikxai.nl') return normalized
+  if (normalized === 'kavelarchitect.nl') return normalized
+  return null
 }
 
 function resolveExtension(file: File) {
@@ -99,3 +151,8 @@ function fileNameToAlt(fileName: string) {
   return name.length > 0 ? name : 'Nieuwsafbeelding'
 }
 
+function asOptionalString(value: FormDataEntryValue | null) {
+  if (typeof value !== 'string') return null
+  const trimmed = value.trim()
+  return trimmed.length > 0 ? trimmed : null
+}
