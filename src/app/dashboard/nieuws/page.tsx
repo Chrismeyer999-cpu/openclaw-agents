@@ -1,4 +1,5 @@
 import { NewsDeleteButton } from '@/components/dashboard/NewsDeleteButton'
+import { NewsQuickCreateForm } from '@/components/dashboard/NewsQuickCreateForm'
 import { NewsStatusBadge } from '@/components/dashboard/NewsStatusBadge'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -24,6 +25,7 @@ export default async function DashboardNieuwsPage({ searchParams }: DashboardNie
 
   const workspaceRows = await getWorkspaceDomains()
   const workspaceDomains = workspaceRows.map((workspace) => workspace.domain)
+  const createDomainOptions = Array.from(new Set(workspaceDomains)).sort()
   const domainOptions = Array.from(new Set([...workspaceDomains, ...NEWS_SITES])).sort()
 
   const { mode, items } = await listNewsItems({
@@ -52,6 +54,11 @@ export default async function DashboardNieuwsPage({ searchParams }: DashboardNie
           </Badge>
         ))}
       </div>
+
+      <NewsQuickCreateForm
+        domainOptions={createDomainOptions}
+        initialDomain={workspaceFilter !== 'all' ? workspaceFilter : createDomainOptions[0]}
+      />
 
       <form className="grid gap-3 rounded-lg border border-gray-200 bg-white p-4 md:grid-cols-5">
         <label className="text-xs font-medium text-gray-600">

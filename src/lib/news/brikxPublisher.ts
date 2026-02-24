@@ -162,9 +162,11 @@ async function ensureIndexContainsArticle(indexFilePath: string, slug: string, v
 
 function mapCategory(sourceType: string): 'markt' | 'regelgeving' | 'project' | 'bedrijf' {
   const value = sourceType.trim().toLowerCase()
-  if (value === 'manual') return 'bedrijf'
+  if (value === 'bedrijf' || value === 'manual' || value.includes('kantoor')) return 'bedrijf'
   if (value === 'kavel' || value.includes('project')) return 'project'
+  if (value === 'regelgeving') return 'regelgeving'
   if (value.includes('regel') || value.includes('wet') || value.includes('beleid')) return 'regelgeving'
+  if (value === 'markt') return 'markt'
   return 'markt'
 }
 

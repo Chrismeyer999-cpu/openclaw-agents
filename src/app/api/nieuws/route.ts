@@ -1,4 +1,13 @@
-import { deleteNewsItem, normalizeSourceMode, publishNewsArticle, saveNewsArticleBody, updateNewsStatus, writeNewsArticle, writeNewsArticleFromBrief } from '@/lib/news'
+import {
+  createNewsArticleFromBrief,
+  deleteNewsItem,
+  normalizeSourceMode,
+  publishNewsArticle,
+  saveNewsArticleBody,
+  updateNewsStatus,
+  writeNewsArticle,
+  writeNewsArticleFromBrief
+} from '@/lib/news'
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
@@ -14,6 +23,56 @@ async function requireUser() {
 
   if (userError || !user) return null
   return user
+}
+
+export async function POST(request: Request) {
+  const user = await requireUser()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const body = (await request.json().catch(() => null)) as
+    | {
+        site?: string
+        title?: string
+        brief?: string
+        summary?: string | null
+        source_type?: string | null
+        source_url?: string | null
+        featured_image_url?: string | null
+        featured_image_alt?: string | null
+        image_url?: string | null
+        image_alt?: string | null
+        image_note?: string | null
+      }
+    | null
+
+  if (typeof body?.site !== 'string' || body.site.trim().length === 0) {
+    return NextResponse.json({ error: 'site is verplicht' }, { status: 400 })
+  }
+  if (typeof body?.title !== 'string' || body.title.trim().length === 0) {
+    return NextResponse.json({ error: 'title is verplicht' }, { status: 400 })
+  }
+  if (typeof body?.brief !== 'string' || body.brief.trim().length < 10) {
+    return NextResponse.json({ error: 'brief is verplicht en moet minimaal 10 tekens bevatten' }, { status: 400 })
+  }
+
+  try {
+    const created = await createNewsArticleFromBrief({
+      site: body.site,
+      title: body.title,
+      brief: body.brief,
+      summary: typeof body.summary === 'string' || body.summary === null ? body.summary : undefined,
+      sourceType: typeof body.source_type === 'string' || body.source_type === null ? body.source_type : undefined,
+      sourceUrl: typeof body.source_url === 'string' || body.source_url === null ? body.source_url : undefined,
+      imageNote: typeof body.image_note === 'string' || body.image_note === null ? body.image_note : undefined,
+      featuredImageUrl: resolveOptionalImageField(body.featured_image_url, body.image_url),
+      featuredImageAlt: resolveOptionalImageField(body.featured_image_alt, body.image_alt)
+    })
+
+    return NextResponse.json(created, { status: 201 })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Onbekende fout'
+    return NextResponse.json({ error: message }, { status: 500 })
+  }
 }
 
 export async function PATCH(request: Request) {
