@@ -61,9 +61,16 @@ export function NewsReviewActions({
   const router = useRouter()
 
   const hasArticle = articleBody.trim().length > 0
-  const canPublishOnZwijsen = site === 'zwijsen.net'
+  const normalizedSite = site
+    .trim()
+    .toLowerCase()
+    .replace(/^https?:\/\//, '')
+    .replace(/^www\./, '')
+    .replace(/\/.*$/, '')
+  const canPublishOnKnownSite = ['zwijsen.net', 'brikxai.nl', 'kavelarchitect.nl'].includes(normalizedSite)
   const canGenerateFromBrief = brief.trim().length >= 10
   const previewUrl = featuredImageUrl.trim()
+  const publishButtonLabel = status === 'published' ? 'Al gepubliceerd' : `Publiceer op ${site}`
   const previewAlt = useMemo(() => {
     const value = featuredImageAlt.trim()
     if (value) return value
@@ -170,6 +177,7 @@ export function NewsReviewActions({
     try {
       const formData = new FormData()
       formData.set('file', selectedFile)
+      formData.set('site', site)
 
       const response = await fetch('/api/nieuws/image', { method: 'POST', body: formData })
       const payload = (await response.json().catch(() => ({}))) as ImageUploadResponse
@@ -280,14 +288,14 @@ export function NewsReviewActions({
               <Button size="sm" variant="secondary" onClick={saveArticle} disabled={isPending}>
                 Tekst + afbeelding opslaan
               </Button>
-              <Button size="sm" variant="outline" onClick={publishArticle} disabled={isPending || !canPublishOnZwijsen || status === 'published'}>
-                {status === 'published' ? 'Al gepubliceerd' : 'Publiceer op zwijsen.net'}
+              <Button size="sm" variant="outline" onClick={publishArticle} disabled={isPending || !canPublishOnKnownSite || status === 'published'}>
+                {publishButtonLabel}
               </Button>
             </div>
           </>
         )}
-        {!canPublishOnZwijsen ? (
-          <p className="text-xs text-gray-500">Publiceren is op dit moment alleen gekoppeld voor zwijsen.net.</p>
+        {!canPublishOnKnownSite ? (
+          <p className="text-xs text-gray-500">Publiceren voor deze site is nog niet gekoppeld.</p>
         ) : null}
       </div>
 
