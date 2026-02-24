@@ -1,7 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import { Globe, LayoutDashboard, Newspaper, Search, TextSearch } from 'lucide-react'
+import { Globe, LayoutDashboard, MapPinned, Newspaper, Search, TextSearch } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -28,6 +28,7 @@ export function SidebarNav({ workspaces }: SidebarNavProps) {
           <p className="px-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Overview</p>
           <NavItem href="/dashboard" label="Dashboard" active={pathname === '/dashboard'} icon={LayoutDashboard} />
           <NavItem href="/dashboard/nieuws" label="Nieuws Center" active={pathname.startsWith('/dashboard/nieuws')} icon={Newspaper} />
+          <NavItem href="/dashboard/kavels" label="Kavels Center" active={pathname.startsWith('/dashboard/kavels')} icon={MapPinned} />
         </div>
         <div className="space-y-2">
           <p className="px-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Workspaces</p>
