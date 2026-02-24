@@ -15,12 +15,12 @@ export default async function KavelDetailPage({ params }: KavelDetailPageProps) 
 
   return (
     <section className="mx-auto max-w-6xl space-y-4">
-      <Link href="/dashboard/kavels" className="text-sm font-medium text-orange-600 hover:text-orange-700">
+      <Link href="/dashboard/kavels" className="text-sm font-medium text-orange-600 hover:text-orange-700 dark:text-orange-300 dark:hover:text-orange-200">
         Terug naar Kavels Center
       </Link>
 
       <header className="space-y-2">
-        <h1 className="text-2xl font-semibold tracking-tight text-gray-900">{listing.adres ?? listing.kavelId}</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-gray-100">{listing.adres ?? listing.kavelId}</h1>
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="outline">{listing.kavelId}</Badge>
           <Badge variant="outline">{listing.sourceType}</Badge>
@@ -31,10 +31,9 @@ export default async function KavelDetailPage({ params }: KavelDetailPageProps) 
         </div>
       </header>
 
-      <div className="rounded-lg border border-gray-200 bg-white p-4">
+      <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
         <KavelDetailEditor listing={listing} />
       </div>
     </section>
   )
 }
-

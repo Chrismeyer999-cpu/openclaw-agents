@@ -103,23 +103,23 @@ export function NewsQuickCreateForm({ domainOptions, initialDomain }: NewsQuickC
 
   if (domainOptions.length === 0) {
     return (
-      <div className="rounded-lg border border-amber-300 bg-amber-50 p-4">
-        <p className="text-sm text-amber-900">Geen workspaces gevonden. Voeg eerst een workspace toe voordat je nieuws kunt aanmaken.</p>
+      <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 dark:border-amber-500/50 dark:bg-amber-950/30">
+        <p className="text-sm text-amber-900 dark:text-amber-200">Geen workspaces gevonden. Voeg eerst een workspace toe voordat je nieuws kunt aanmaken.</p>
       </div>
     )
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 rounded-lg border border-gray-200 bg-white p-4">
+    <form onSubmit={handleSubmit} className="space-y-3 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
       <div>
-        <h2 className="text-base font-semibold text-gray-900">Nieuw artikel toevoegen</h2>
-        <p className="text-sm text-gray-500">Vul een korte briefing in. Het dashboard maakt direct een conceptartikel voor je aan.</p>
+        <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Nieuw artikel toevoegen</h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Vul een korte briefing in. Het dashboard maakt direct een conceptartikel voor je aan.</p>
       </div>
 
       <div className="grid gap-3 md:grid-cols-3">
-        <label className="text-xs font-medium text-gray-600">
+        <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
           Site
-          <select value={site} onChange={(event) => setSite(event.target.value)} className="mt-1 h-9 w-full rounded-md border border-gray-300 px-2 text-sm">
+          <select value={site} onChange={(event) => setSite(event.target.value)} className="mt-1 h-9 w-full rounded-md border border-gray-300 bg-white px-2 text-sm dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100">
             {domainOptions.map((domain) => (
               <option key={domain} value={domain}>
                 {domain}
@@ -128,14 +128,14 @@ export function NewsQuickCreateForm({ domainOptions, initialDomain }: NewsQuickC
           </select>
         </label>
 
-        <label className="text-xs font-medium text-gray-600">
+        <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
           Titel
           <Input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Bijv. Nieuwe regels voor vergunningen in 2026" className="mt-1" />
         </label>
 
-        <label className="text-xs font-medium text-gray-600">
+        <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
           Categorie
-          <select value={sourceType} onChange={(event) => setSourceType(event.target.value)} className="mt-1 h-9 w-full rounded-md border border-gray-300 px-2 text-sm">
+          <select value={sourceType} onChange={(event) => setSourceType(event.target.value)} className="mt-1 h-9 w-full rounded-md border border-gray-300 bg-white px-2 text-sm dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100">
             {sourceTypeOptions.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
@@ -145,13 +145,13 @@ export function NewsQuickCreateForm({ domainOptions, initialDomain }: NewsQuickC
         </label>
       </div>
 
-      <label className="block text-xs font-medium text-gray-600">
+      <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">
         Korte briefing (minimaal 10 tekens)
         <textarea
           value={brief}
           onChange={(event) => setBrief(event.target.value)}
           placeholder="Schrijf 2-5 zinnen met de kern van het nieuws."
-          className="mt-1 min-h-[110px] w-full rounded-md border border-gray-300 p-2 text-sm leading-6 text-gray-800"
+          className="mt-1 min-h-[110px] w-full rounded-md border border-gray-300 bg-white p-2 text-sm leading-6 text-gray-800 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"
         />
       </label>
 
@@ -159,10 +159,10 @@ export function NewsQuickCreateForm({ domainOptions, initialDomain }: NewsQuickC
         <Button type="submit" disabled={!canSubmit}>
           {isPending ? 'Artikel maken...' : 'Maak artikel'}
         </Button>
-        <p className="text-xs text-gray-500">Na aanmaken ga je direct naar de artikelpagina om te finetunen of te publiceren.</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400">Na aanmaken ga je direct naar de artikelpagina om te finetunen of te publiceren.</p>
       </div>
 
-      {message ? <p className="text-sm text-emerald-700">{message}</p> : null}
+      {message ? <p className="text-sm text-emerald-700 dark:text-emerald-400">{message}</p> : null}
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
     </form>
   )

@@ -44,7 +44,7 @@ export default async function WorkspacePagesPage({
   })
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white">
+    <div className="rounded-lg border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
       <Table>
         <TableHeader>
           <TableRow>
@@ -57,7 +57,7 @@ export default async function WorkspacePagesPage({
         <TableBody>
           {(pages ?? []).length === 0 ? (
             <TableRow>
-              <TableCell colSpan={4} className="text-center text-sm text-gray-500">
+              <TableCell colSpan={4} className="text-center text-sm text-gray-500 dark:text-gray-400">
                 Nog geen pillar pages in deze workspace.
               </TableCell>
             </TableRow>
@@ -65,7 +65,7 @@ export default async function WorkspacePagesPage({
             (pages ?? []).map((page) => (
               <TableRow key={page.id}>
                 <TableCell className="font-medium">{page.title}</TableCell>
-                <TableCell className="max-w-[340px] truncate text-xs text-gray-500">{page.url}</TableCell>
+                <TableCell className="max-w-[340px] truncate text-xs text-gray-500 dark:text-gray-400">{page.url}</TableCell>
                 <TableCell>
                   <Badge variant={page.has_schema ? 'secondary' : 'outline'}>{page.has_schema ? 'Ja' : 'Nee'}</Badge>
                 </TableCell>

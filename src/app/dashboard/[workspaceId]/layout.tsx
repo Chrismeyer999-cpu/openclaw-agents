@@ -37,7 +37,7 @@ export default async function WorkspaceLayout({
     <section className="space-y-4">
       <header className="space-y-2">
         <div className="flex items-center gap-2">
-          <h1 className="text-xl font-semibold text-gray-900">{workspace.domain}</h1>
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">{workspace.domain}</h1>
           <Badge variant="outline">{workspace.domain}</Badge>
         </div>
         <nav className="flex flex-wrap gap-2">
@@ -45,7 +45,7 @@ export default async function WorkspaceLayout({
             <Link
               key={tab.href}
               href={tab.href}
-              className="rounded-md border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="rounded-md border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
             >
               {tab.label}
             </Link>

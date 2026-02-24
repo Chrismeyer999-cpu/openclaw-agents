@@ -63,77 +63,77 @@ export function KavelAlertSubscriberForm() {
   }
 
   return (
-    <div className="space-y-3 rounded-lg border border-gray-200 bg-white p-4">
-      <p className="text-sm font-medium text-gray-900">KavelAlert inschrijving toevoegen</p>
+    <div className="space-y-3 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
+      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">KavelAlert inschrijving toevoegen</p>
       <div className="grid gap-2 md:grid-cols-3">
-        <label className="text-xs font-medium text-gray-600 md:col-span-2">
+        <label className="text-xs font-medium text-gray-600 dark:text-gray-300 md:col-span-2">
           E-mail
           <input
             type="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             placeholder="naam@domein.nl"
-            className="mt-1 h-9 w-full rounded-md border border-gray-300 px-2 text-sm"
+            className="mt-1 h-9 w-full rounded-md border border-gray-300 bg-white px-2 text-sm dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"
           />
         </label>
-        <label className="text-xs font-medium text-gray-600">
+        <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
           Naam
-          <input value={naam} onChange={(event) => setNaam(event.target.value)} className="mt-1 h-9 w-full rounded-md border border-gray-300 px-2 text-sm" />
+          <input value={naam} onChange={(event) => setNaam(event.target.value)} className="mt-1 h-9 w-full rounded-md border border-gray-300 bg-white px-2 text-sm dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100" />
         </label>
-        <label className="text-xs font-medium text-gray-600">
+        <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
           Telefoon
           <input
             value={telefoonnummer}
             onChange={(event) => setTelefoonnummer(event.target.value)}
-            className="mt-1 h-9 w-full rounded-md border border-gray-300 px-2 text-sm"
+            className="mt-1 h-9 w-full rounded-md border border-gray-300 bg-white px-2 text-sm dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"
           />
         </label>
-        <label className="text-xs font-medium text-gray-600 md:col-span-2">
+        <label className="text-xs font-medium text-gray-600 dark:text-gray-300 md:col-span-2">
           Provincies (comma separated)
           <input
             value={provincies}
             onChange={(event) => setProvincies(event.target.value)}
             placeholder="utrecht, noord-holland"
-            className="mt-1 h-9 w-full rounded-md border border-gray-300 px-2 text-sm"
+            className="mt-1 h-9 w-full rounded-md border border-gray-300 bg-white px-2 text-sm dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"
           />
         </label>
-        <label className="text-xs font-medium text-gray-600">
+        <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
           Min prijs
           <input
             value={minPrijs}
             onChange={(event) => setMinPrijs(event.target.value)}
             inputMode="decimal"
-            className="mt-1 h-9 w-full rounded-md border border-gray-300 px-2 text-sm"
+            className="mt-1 h-9 w-full rounded-md border border-gray-300 bg-white px-2 text-sm dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"
           />
         </label>
-        <label className="text-xs font-medium text-gray-600">
+        <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
           Max prijs
           <input
             value={maxPrijs}
             onChange={(event) => setMaxPrijs(event.target.value)}
             inputMode="decimal"
-            className="mt-1 h-9 w-full rounded-md border border-gray-300 px-2 text-sm"
+            className="mt-1 h-9 w-full rounded-md border border-gray-300 bg-white px-2 text-sm dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"
           />
         </label>
-        <label className="text-xs font-medium text-gray-600">
+        <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
           Min m2
           <input
             value={minOppervlakte}
             onChange={(event) => setMinOppervlakte(event.target.value)}
             inputMode="decimal"
-            className="mt-1 h-9 w-full rounded-md border border-gray-300 px-2 text-sm"
+            className="mt-1 h-9 w-full rounded-md border border-gray-300 bg-white px-2 text-sm dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"
           />
         </label>
-        <label className="text-xs font-medium text-gray-600 md:col-span-3">
+        <label className="text-xs font-medium text-gray-600 dark:text-gray-300 md:col-span-3">
           Opmerkingen
           <input
             value={opmerkingen}
             onChange={(event) => setOpmerkingen(event.target.value)}
-            className="mt-1 h-9 w-full rounded-md border border-gray-300 px-2 text-sm"
+            className="mt-1 h-9 w-full rounded-md border border-gray-300 bg-white px-2 text-sm dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"
           />
         </label>
       </div>
-      <label className="flex items-center gap-2 text-xs text-gray-600">
+      <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
         <input type="checkbox" checked={earlyAccessRapport} onChange={(event) => setEarlyAccessRapport(event.target.checked)} />
         Early access kavelrapport
       </label>
@@ -141,11 +141,10 @@ export function KavelAlertSubscriberForm() {
         <Button size="sm" onClick={submit} disabled={isPending || !email.trim()}>
           Opslaan
         </Button>
-        {isPending ? <p className="text-xs text-gray-500">Opslaan...</p> : null}
+        {isPending ? <p className="text-xs text-gray-500 dark:text-gray-400">Opslaan...</p> : null}
       </div>
-      {message ? <p className="text-xs text-emerald-700">{message}</p> : null}
+      {message ? <p className="text-xs text-emerald-700 dark:text-emerald-400">{message}</p> : null}
       {error ? <p className="text-xs text-red-600">{error}</p> : null}
     </div>
   )
 }
-
