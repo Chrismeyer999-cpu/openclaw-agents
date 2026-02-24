@@ -51,6 +51,18 @@ interface NewsContentUpdate {
   featuredImageAlt?: string | null
 }
 
+interface CreateNewsArticleFromBriefInput {
+  site: string
+  title: string
+  brief: string
+  summary?: string | null
+  sourceType?: string | null
+  sourceUrl?: string | null
+  imageNote?: string | null
+  featuredImageUrl?: string | null
+  featuredImageAlt?: string | null
+}
+
 export async function updateNewsContent(id: string, update: NewsContentUpdate, source: NewsSourceMode | null) {
   if (source === 'agent') {
     if (Object.keys(update).length === 1 && typeof update.body === 'string') {
@@ -246,6 +258,87 @@ export async function publishNewsArticle(
   }
 }
 
+export async function createNewsArticleFromBrief(input: CreateNewsArticleFromBriefInput) {
+  const supabase = await createClient()
+  const normalizedDomain = normalizeSiteDomain(input.site)
+  const cleanTitle = input.title.trim()
+  const cleanBrief = input.brief.trim()
+
+  if (!cleanTitle) throw new Error('title is verplicht')
+  if (cleanBrief.length < 10) throw new Error('brief moet minimaal 10 tekens bevatten')
+
+  const { data: workspace, error: workspaceError } = await supabase
+    .from('workspaces')
+    .select('id, domain')
+    .eq('domain', normalizedDomain)
+    .maybeSingle()
+  if (workspaceError) throw new Error(`Kon workspace niet laden: ${workspaceError.message}`)
+  if (!workspace) throw new Error(`Geen workspace gevonden voor domein '${normalizedDomain}'.`)
+
+  const nextSummary = normalizeOptionalText(input.summary) ?? summarizeBrief(cleanBrief)
+  const nextSourceUrl = normalizeOptionalText(input.sourceUrl)
+  const nextSourceType = normalizeSourceType(input.sourceType)
+  const nextFeaturedImageUrl = normalizeOptionalText(input.featuredImageUrl)
+  const nextFeaturedImageAlt = normalizeOptionalText(input.featuredImageAlt)
+  const generated = await generateArticleFromBrief({
+    title: cleanTitle,
+    summary: nextSummary,
+    sourceUrl: nextSourceUrl,
+    site: workspace.domain,
+    brief: cleanBrief,
+    imageUrl: nextFeaturedImageUrl,
+    imageAlt: nextFeaturedImageAlt,
+    imageNote: normalizeOptionalText(input.imageNote)
+  })
+
+  const payload = {
+    workspace_id: workspace.id,
+    title: cleanTitle,
+    summary: nextSummary,
+    body_md: generated.body,
+    source_url: nextSourceUrl,
+    source_type: nextSourceType,
+    review_status: 'pending' as const,
+    featured_image_url: nextFeaturedImageUrl,
+    featured_image_alt: nextFeaturedImageAlt
+  }
+
+  let persistedFeaturedImageUrl = nextFeaturedImageUrl
+  let persistedFeaturedImageAlt = nextFeaturedImageAlt
+  const firstTry = await supabase.from('nieuws').insert(payload).select('id').maybeSingle()
+  let created = firstTry.data
+
+  if (firstTry.error && isMissingFeaturedImageColumnError(firstTry.error)) {
+    const fallbackPayload = {
+      workspace_id: payload.workspace_id,
+      title: payload.title,
+      summary: payload.summary,
+      body_md: payload.body_md,
+      source_url: payload.source_url,
+      source_type: payload.source_type,
+      review_status: payload.review_status
+    }
+    const secondTry = await supabase.from('nieuws').insert(fallbackPayload).select('id').maybeSingle()
+    if (secondTry.error) throw new Error(`Artikel aanmaken mislukt: ${secondTry.error.message}`)
+    created = secondTry.data
+    persistedFeaturedImageUrl = null
+    persistedFeaturedImageAlt = null
+  } else if (firstTry.error) {
+    throw new Error(`Artikel aanmaken mislukt: ${firstTry.error.message}`)
+  }
+
+  if (!created?.id) throw new Error('Artikel is aangemaakt maar id ontbreekt in response.')
+
+  return {
+    id: created.id as string,
+    body: generated.body,
+    review_status: 'pending' as const,
+    featured_image_url: persistedFeaturedImageUrl,
+    featured_image_alt: persistedFeaturedImageAlt,
+    generation_mode: generated.mode
+  }
+}
+
 export async function deleteNewsItem(id: string, source: NewsSourceMode | null) {
   if (source === 'agent') return deleteAgentNewsById(id)
 
@@ -294,6 +387,17 @@ function normalizeOptionalText(value: string | null | undefined) {
   if (value === null) return null
   const trimmed = value.trim()
   return trimmed.length > 0 ? trimmed : null
+}
+
+function summarizeBrief(brief: string) {
+  const compact = brief.replace(/\s+/g, ' ').trim()
+  if (compact.length <= 220) return compact
+  return `${compact.slice(0, 217).trimEnd()}...`
+}
+
+function normalizeSourceType(value: string | null | undefined) {
+  const trimmed = value?.trim()
+  return trimmed && trimmed.length > 0 ? trimmed : 'manual'
 }
 
 function normalizeSiteDomain(site: string) {

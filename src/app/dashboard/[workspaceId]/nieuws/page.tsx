@@ -1,4 +1,5 @@
 import { NewsDeleteButton } from '@/components/dashboard/NewsDeleteButton'
+import { NewsQuickCreateForm } from '@/components/dashboard/NewsQuickCreateForm'
 import { NewsStatusBadge } from '@/components/dashboard/NewsStatusBadge'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -23,6 +24,7 @@ export default async function WorkspaceNieuwsPage({
   return (
     <div className="space-y-3">
       <Badge variant="outline">Databron: {mode === 'agent' ? 'Agent Supabase' : 'SEO Supabase'}</Badge>
+      <NewsQuickCreateForm domainOptions={[workspace.domain]} initialDomain={workspace.domain} />
       <div className="rounded-lg border border-gray-200 bg-white">
         <Table>
           <TableHeader>
