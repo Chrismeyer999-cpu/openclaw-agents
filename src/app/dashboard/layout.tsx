@@ -4,6 +4,8 @@ import { TopbarControls } from '@/components/dashboard/TopbarControls'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
+const DASHBOARD_BUILD = 'main@5004db5'
+
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
   const {
@@ -40,6 +42,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
             <div>
             <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">SEO Intelligence Platform</p>
             <p className="text-xs text-gray-500 dark:text-gray-400">{user.email}</p>
+            <p className="text-[11px] text-orange-600 dark:text-orange-300">Build: {DASHBOARD_BUILD}</p>
           </div>
             <TopbarControls workspaces={mappedWorkspaces} />
             <SignOutButton />
