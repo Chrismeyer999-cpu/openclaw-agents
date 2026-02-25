@@ -6,6 +6,7 @@ import { getCostOverview } from '@/lib/dashboard/getCostOverview'
 import { getGoogleStatus } from '@/lib/dashboard/getGoogleStatus'
 import { getTodos } from '@/lib/dashboard/getTodos'
 import { TodoListCard } from '@/components/dashboard/TodoListCard'
+import { GoogleSyncCard } from '@/components/dashboard/GoogleSyncCard'
 import { Newspaper, Search, TextSearch } from 'lucide-react'
 import Link from 'next/link'
 
@@ -40,7 +41,10 @@ export default async function DashboardPage() {
         <Badge variant={cost?.overBudgetAgents ? 'destructive' : 'secondary'}>Agent budget alerts: {cost?.overBudgetAgents ?? 0}</Badge>
       </div>
 
-      <TodoListCard items={todos} />
+      <div className="grid gap-4 lg:grid-cols-2">
+        <TodoListCard items={todos} />
+        <GoogleSyncCard />
+      </div>
 
       <div className="grid gap-6 xl:grid-cols-3">
         {overview.workspaceStats.map((workspace) => {
