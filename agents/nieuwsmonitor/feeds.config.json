@@ -15,110 +15,30 @@
   "agents": {
     "kavel-agent": {
       "feeds": [
-        {
-          "name": "Omgevingsweb",
-          "url": "https://www.omgevingsweb.nl/feed/",
-          "type": "rss",
-          "weight": 1.0
-        },
-        {
-          "name": "Bouwwereld",
-          "url": "https://www.bouwwereld.nl/feed/",
-          "type": "rss",
-          "weight": 0.8
-        },
-        {
-          "name": "Google News - kaveluitgifte",
-          "url": "https://news.google.com/rss/search?q=kaveluitgifte%20gemeente%20OR%20nieuwbouwlocatie&hl=nl&gl=NL&ceid=NL:nl",
-          "type": "rss",
-          "weight": 0.9
-        },
-        {
-          "name": "Google News - zelfbouwkavel",
-          "url": "https://news.google.com/rss/search?q=zelfbouwkavel%20OR%20bouwkavel%20nieuws&hl=nl&gl=NL&ceid=NL:nl",
-          "type": "rss",
-          "weight": 0.9
-        }
+        { "name": "Omgevingsweb", "url": "https://www.omgevingsweb.nl/feed/", "type": "rss", "weight": 1.0 },
+        { "name": "Bouwwereld", "url": "https://www.bouwwereld.nl/feed/", "type": "rss", "weight": 0.8 },
+        { "name": "Google News - kaveluitgifte", "url": "https://news.google.com/rss/search?q=kaveluitgifte%20gemeente%20OR%20nieuwbouwlocatie&hl=nl&gl=NL&ceid=NL:nl", "type": "rss", "weight": 0.9 },
+        { "name": "Google News - zelfbouwkavel", "url": "https://news.google.com/rss/search?q=zelfbouwkavel%20OR%20bouwkavel%20nieuws&hl=nl&gl=NL&ceid=NL:nl", "type": "rss", "weight": 0.9 }
       ]
     },
     "brikx-agent": {
       "feeds": [
-        {
-          "name": "Omgevingsweb",
-          "url": "https://www.omgevingsweb.nl/feed/",
-          "type": "rss",
-          "weight": 1.0
-        },
-        {
-          "name": "Bouwwereld",
-          "url": "https://www.bouwwereld.nl/feed/",
-          "type": "rss",
-          "weight": 0.9
-        },
-        {
-          "name": "Google News - Omgevingswet/Wkb",
-          "url": "https://news.google.com/rss/search?q=omgevingswet%20OR%20wkb%20bouw&hl=nl&gl=NL&ceid=NL:nl",
-          "type": "rss",
-          "weight": 0.9
-        },
-        {
-          "name": "Google News - bouwkosten particulier",
-          "url": "https://news.google.com/rss/search?q=bouwkosten%20particuliere%20woning&hl=nl&gl=NL&ceid=NL:nl",
-          "type": "rss",
-          "weight": 0.8
-        }
+        { "name": "Omgevingsweb", "url": "https://www.omgevingsweb.nl/feed/", "type": "rss", "weight": 1.0 },
+        { "name": "Bouwwereld", "url": "https://www.bouwwereld.nl/feed/", "type": "rss", "weight": 0.9 },
+        { "name": "Google News - Omgevingswet/Wkb", "url": "https://news.google.com/rss/search?q=omgevingswet%20OR%20wkb%20bouw&hl=nl&gl=NL&ceid=NL:nl", "type": "rss", "weight": 0.9 },
+        { "name": "Google News - bouwkosten particulier", "url": "https://news.google.com/rss/search?q=bouwkosten%20particuliere%20woning&hl=nl&gl=NL&ceid=NL:nl", "type": "rss", "weight": 0.8 }
       ]
     },
     "zwijsen-agent": {
       "feeds": [
-        {
-          "name": "ArchDaily",
-          "url": "https://www.archdaily.com/feed",
-          "type": "rss",
-          "weight": 0.9
-        },
-        {
-          "name": "Dezeen",
-          "url": "https://www.dezeen.com/feed/",
-          "type": "rss",
-          "weight": 0.9
-        },
-        {
-          "name": "OpenAI News",
-          "url": "https://openai.com/news/rss.xml",
-          "type": "rss",
-          "weight": 1.0
-        },
-        {
-          "name": "Google AI Blog",
-          "url": "https://blog.google/technology/ai/rss/",
-          "type": "rss",
-          "weight": 1.0
-        },
-        {
-          "name": "NVIDIA Blog",
-          "url": "https://blogs.nvidia.com/feed/",
-          "type": "rss",
-          "weight": 0.8
-        },
-        {
-          "name": "Google News - AI in architectuur",
-          "url": "https://news.google.com/rss/search?q=AI%20architectuur%20OR%20generative%20design%20architecten&hl=nl&gl=NL&ceid=NL:nl",
-          "type": "rss",
-          "weight": 1.0
-        },
-        {
-          "name": "Google News - AI in bouw",
-          "url": "https://news.google.com/rss/search?q=AI%20bouwsector%20OR%20construction%20AI%20BIM&hl=nl&gl=NL&ceid=NL:nl",
-          "type": "rss",
-          "weight": 1.0
-        },
-        {
-          "name": "Google News - workflow architecten",
-          "url": "https://news.google.com/rss/search?q=architect%20workflow%20automation%20AI&hl=nl&gl=NL&ceid=NL:nl",
-          "type": "rss",
-          "weight": 0.9
-        }
+        { "name": "OpenAI News", "url": "https://openai.com/news/rss.xml", "type": "rss", "weight": 1.0 },
+        { "name": "Google AI Blog", "url": "https://blog.google/technology/ai/rss/", "type": "rss", "weight": 1.0 },
+        { "name": "NVIDIA Blog", "url": "https://blogs.nvidia.com/feed/", "type": "rss", "weight": 0.8 },
+        { "name": "Dezeen", "url": "https://www.dezeen.com/feed/", "type": "rss", "weight": 0.6 },
+        { "name": "ArchDaily", "url": "https://www.archdaily.com/feed", "type": "rss", "weight": 0.6 },
+        { "name": "Google News - AI in architectuur", "url": "https://news.google.com/rss/search?q=AI%20architectuur%20OR%20generative%20design%20architecten&hl=nl&gl=NL&ceid=NL:nl", "type": "rss", "weight": 1.0 },
+        { "name": "Google News - AI in bouw", "url": "https://news.google.com/rss/search?q=AI%20bouwsector%20OR%20construction%20AI%20BIM&hl=nl&gl=NL&ceid=NL:nl", "type": "rss", "weight": 1.0 },
+        { "name": "Google News - workflow architecten", "url": "https://news.google.com/rss/search?q=architect%20workflow%20automation%20AI&hl=nl&gl=NL&ceid=NL:nl", "type": "rss", "weight": 0.9 }
       ]
     }
   }
