@@ -67,6 +67,14 @@ Trigger: `[PROJECTNIEUWS] ...`
 Volg `agents/nieuwsmonitor/EDITORIAL_STYLE_GUIDE.md` voor elke output.
 Geen uitzonderingen zonder expliciete instructie van Jules.
 
+## Skills policy (verplicht)
+Volg `agents/nieuwsmonitor/SKILLS_INTEGRATION_PLAN.md`.
+Minimale gates vóór publicatie:
+1. copy-editing pass
+2. ai-seo structuurcheck
+3. beeld + alt-tekst
+4. analytics-tracking log na publish
+
 ## Logging & kostenprotocol
 Voor elke run:
 1. Pre-run budgetcheck
