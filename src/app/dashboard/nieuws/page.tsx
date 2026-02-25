@@ -35,7 +35,7 @@ type ReviewStatus = 'pending' | 'approved' | 'rejected' | 'published'
 const REVIEW_STATUSES: ReviewStatus[] = ['pending', 'approved', 'rejected', 'published']
 
 interface DashboardNieuwsPageProps {
-  searchParams: Promise<{ workspace?: string; status?: string; source?: string; q?: string }>
+  searchParams: Promise<{ workspace?: string; status?: string; source?: string; q?: string; sort?: string }>
 }
 
 export default async function DashboardNieuwsPage({ searchParams }: DashboardNieuwsPageProps) {
@@ -44,6 +44,7 @@ export default async function DashboardNieuwsPage({ searchParams }: DashboardNie
   const statusFilter = params.status ?? 'all'
   const sourceFilter = params.source ?? 'all'
   const queryFilter = (params.q ?? '').trim()
+  const sortFilter = params.sort ?? 'newest'
 
   const workspaceRows = await getWorkspaceDomains()
   const workspaceDomains = workspaceRows.map((workspace) => workspace.domain)
@@ -58,8 +59,13 @@ export default async function DashboardNieuwsPage({ searchParams }: DashboardNie
     limit: 200
   })
 
-  const pendingByDomain = pendingCountByDomain(items)
-  const sourceOptions = Array.from(new Set(items.map((item) => item.sourceType))).sort()
+  const sortedItems = [...items].sort((a, b) => {
+    if (sortFilter === 'relevance') return relevanceScore(b) - relevanceScore(a)
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  })
+
+  const pendingByDomain = pendingCountByDomain(sortedItems)
+  const sourceOptions = Array.from(new Set(sortedItems.map((item) => item.sourceType))).sort()
 
   return (
     <section className="mx-auto max-w-7xl space-y-6">
@@ -82,7 +88,7 @@ export default async function DashboardNieuwsPage({ searchParams }: DashboardNie
         initialDomain={workspaceFilter !== 'all' ? workspaceFilter : createDomainOptions[0]}
       />
 
-      <form className="grid gap-3 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900 md:grid-cols-5">
+      <form className="grid gap-3 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900 md:grid-cols-6">
         <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
           Site
           <select name="workspace" defaultValue={workspaceFilter} className="mt-1 h-9 w-full rounded-md border border-gray-300 bg-white px-2 text-sm dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100">
@@ -116,6 +122,13 @@ export default async function DashboardNieuwsPage({ searchParams }: DashboardNie
             ))}
           </select>
         </label>
+        <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
+          Sortering
+          <select name="sort" defaultValue={sortFilter} className="mt-1 h-9 w-full rounded-md border border-gray-300 bg-white px-2 text-sm dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100">
+            <option value="newest">Nieuwste eerst</option>
+            <option value="relevance">Hoogste relevantie</option>
+          </select>
+        </label>
         <label className="text-xs font-medium text-gray-600 dark:text-gray-300 md:col-span-2">
           Zoek titel
           <div className="mt-1 flex gap-2">
@@ -141,14 +154,14 @@ export default async function DashboardNieuwsPage({ searchParams }: DashboardNie
             </TableRow>
           </TableHeader>
           <TableBody>
-            {items.length === 0 ? (
+            {sortedItems.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="text-center text-sm text-gray-500 dark:text-gray-400">
                   Geen nieuwsitems gevonden met deze filters.
                 </TableCell>
               </TableRow>
             ) : (
-              items.map((item) => {
+              sortedItems.map((item) => {
                 const score = relevanceScore(item)
                 return (
                 <TableRow key={`${item.origin}-${item.id}`}>
