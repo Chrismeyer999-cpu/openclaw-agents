@@ -162,6 +162,9 @@ export function NewsReviewActions({
   const updateStatus = (reviewStatus: ReviewStatus) => {
     runPatchAction({ action: 'set_status', review_status: reviewStatus }, 'Status bijgewerkt.', () => {
       setStatus(reviewStatus)
+      if (reviewStatus === 'approved' || reviewStatus === 'rejected') {
+        router.push('/dashboard/nieuws')
+      }
     })
   }
 
