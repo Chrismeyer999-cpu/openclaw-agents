@@ -215,8 +215,11 @@ async function getOAuthAccessTokenFromRefresh(refreshToken: string, scope: strin
 async function getServiceAccountAccessToken(scope: string) {
   const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL?.trim()
   const keyRaw = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY
-  if (!email || !keyRaw) return null
-  const privateKey = keyRaw.replace(/\\n/g, '\n')
+  const keyB64 = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_BASE64
+  if (!email || (!keyRaw && !keyB64)) return null
+
+  const privateKey = normalizePrivateKey(keyRaw, keyB64)
+  if (!privateKey) return null
 
   const now = Math.floor(Date.now() / 1000)
   const header = base64urlJson({ alg: 'RS256', typ: 'JWT' })
@@ -281,6 +284,30 @@ async function safeText(res: Response) {
     return await res.text()
   } catch {
     return ''
+  }
+}
+
+function normalizePrivateKey(raw?: string, b64?: string) {
+  try {
+    let key = ''
+    if (b64?.trim()) {
+      key = Buffer.from(b64.trim(), 'base64').toString('utf8')
+    } else if (raw?.trim()) {
+      key = raw.trim()
+    }
+
+    if (!key) return null
+
+    // Vercel env often stores escaped newlines
+    key = key.replace(/\\n/g, '\n')
+
+    // Strip accidental wrapping quotes
+    key = key.replace(/^"|"$/g, '').replace(/^'|'$/g, '')
+
+    if (!key.includes('BEGIN PRIVATE KEY')) return null
+    return key
+  } catch {
+    return null
   }
 }
 
