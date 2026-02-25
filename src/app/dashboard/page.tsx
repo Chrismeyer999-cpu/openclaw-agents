@@ -2,11 +2,13 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { getOverviewData } from '@/lib/dashboard/getOverviewData'
+import { getCostOverview } from '@/lib/dashboard/getCostOverview'
+import { getGoogleStatus } from '@/lib/dashboard/getGoogleStatus'
 import { Newspaper, Search, TextSearch } from 'lucide-react'
 import Link from 'next/link'
 
 export default async function DashboardPage() {
-  const overview = await getOverviewData()
+  const [overview, cost, google] = await Promise.all([getOverviewData(), getCostOverview(), getGoogleStatus()])
 
   return (
     <section className="mx-auto max-w-7xl space-y-6">
@@ -18,11 +20,22 @@ export default async function DashboardPage() {
         </Link>
       </header>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
         <MetricCard icon={<Search className="size-4 text-orange-500" />} label="Organic clicks (30d)" value={overview.totalClicks30d.toLocaleString('nl-NL')} />
         <MetricCard icon={<TextSearch className="size-4 text-emerald-600" />} label="LLM mentions (30d)" value={overview.totalMentions30d.toLocaleString('nl-NL')} />
         <MetricCard icon={<Badge variant="outline">{overview.structuredCoverage}%</Badge>} label="Structured coverage" value={`${overview.structuredCoverage}%`} />
         <MetricCard icon={<Newspaper className="size-4 text-red-500" />} label="Pending nieuws" value={overview.pendingNieuws.toLocaleString('nl-NL')} />
+        <MetricCard
+          icon={<Badge variant={cost?.overBudgetAgents ? 'destructive' : 'secondary'}>{cost ? `${cost.overBudgetAgents} over` : 'n/a'}</Badge>}
+          label="Agent spend (month)"
+          value={cost ? `$${cost.monthUsd.toFixed(2)}` : 'n/a'}
+        />
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        <Badge variant="outline">Google Search Console: {google ? `${google.gscConnected}/${google.gscTotal} workspaces gekoppeld` : 'onbekend'}</Badge>
+        <Badge variant={google?.ga4Ready ? 'secondary' : 'destructive'}>GA4 sync: {google?.ga4Ready ? 'ready' : 'niet geconfigureerd'}</Badge>
+        <Badge variant={cost?.overBudgetAgents ? 'destructive' : 'secondary'}>Agent budget alerts: {cost?.overBudgetAgents ?? 0}</Badge>
       </div>
 
       <div className="grid gap-6 xl:grid-cols-3">
