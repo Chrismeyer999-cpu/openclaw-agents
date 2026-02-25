@@ -9,6 +9,30 @@ import { getWorkspaceDomains, listNewsItems, pendingCountByDomain } from '@/lib/
 import { NEWS_SITES } from '@/lib/news/siteUtils'
 import Link from 'next/link'
 
+function relevanceScore(item: { title: string; summary: string | null; body: string | null; sourceType: string }) {
+  const text = [item.title, item.summary ?? '', item.body ?? '', item.sourceType].join(' ').toLowerCase()
+  const positiveTerms = [
+    'architect',
+    'architectuur',
+    'woning',
+    'nieuwbouw',
+    'verbouw',
+    'kavel',
+    'omgevingswet',
+    'omgevingsplan',
+    'bouwvergunning',
+    'bouwkosten',
+    'bim',
+    'ai',
+    'generative'
+  ]
+  const negativeTerms = ['sport', 'entertainment', 'onderwijs', 'voetbal']
+  const pos = positiveTerms.filter((t) => text.includes(t)).length
+  const neg = negativeTerms.filter((t) => text.includes(t)).length
+  const raw = 0.45 + pos * 0.07 - neg * 0.08
+  return Math.max(0.05, Math.min(0.99, raw))
+}
+
 type ReviewStatus = 'pending' | 'approved' | 'rejected' | 'published'
 const REVIEW_STATUSES: ReviewStatus[] = ['pending', 'approved', 'rejected', 'published']
 
@@ -112,6 +136,7 @@ export default async function DashboardNieuwsPage({ searchParams }: DashboardNie
               <TableHead>Site</TableHead>
               <TableHead>Titel</TableHead>
               <TableHead>Bron</TableHead>
+              <TableHead>Relevantie</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Aangemaakt</TableHead>
               <TableHead className="text-right">Actie</TableHead>
@@ -120,16 +145,25 @@ export default async function DashboardNieuwsPage({ searchParams }: DashboardNie
           <TableBody>
             {items.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-sm text-gray-500 dark:text-gray-400">
+                <TableCell colSpan={7} className="text-center text-sm text-gray-500 dark:text-gray-400">
                   Geen nieuwsitems gevonden met deze filters.
                 </TableCell>
               </TableRow>
             ) : (
-              items.map((item) => (
+              items.map((item) => {
+                const score = relevanceScore(item)
+                return (
                 <TableRow key={`${item.origin}-${item.id}`}>
                   <TableCell>{item.site}</TableCell>
-                  <TableCell className="max-w-[340px] truncate font-medium">{item.title}</TableCell>
+                  <TableCell className="max-w-[420px]">
+                    <p className="truncate font-medium">{item.title}</p>
+                    {item.summary ? <p className="line-clamp-2 text-xs text-gray-500 dark:text-gray-400">{item.summary}</p> : null}
+                  </TableCell>
                   <TableCell>{item.sourceType}</TableCell>
+                  <TableCell>
+                    <div className="font-mono text-xs">{score.toFixed(2)} ({Math.round(score * 100)}%)</div>
+                    <div className="text-[11px] text-gray-500 dark:text-gray-400">{score >= 0.75 ? 'sterke match' : score >= 0.6 ? 'twijfelgeval' : 'lage match'}</div>
+                  </TableCell>
                   <TableCell>
                     <NewsStatusBadge status={item.reviewStatus} />
                   </TableCell>
@@ -143,7 +177,7 @@ export default async function DashboardNieuwsPage({ searchParams }: DashboardNie
                     </div>
                   </TableCell>
                 </TableRow>
-              ))
+              )})
             )}
           </TableBody>
         </Table>
