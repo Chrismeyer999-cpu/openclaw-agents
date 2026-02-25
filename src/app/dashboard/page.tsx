@@ -4,11 +4,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { getOverviewData } from '@/lib/dashboard/getOverviewData'
 import { getCostOverview } from '@/lib/dashboard/getCostOverview'
 import { getGoogleStatus } from '@/lib/dashboard/getGoogleStatus'
+import { getTodos } from '@/lib/dashboard/getTodos'
+import { TodoListCard } from '@/components/dashboard/TodoListCard'
 import { Newspaper, Search, TextSearch } from 'lucide-react'
 import Link from 'next/link'
 
 export default async function DashboardPage() {
-  const [overview, cost, google] = await Promise.all([getOverviewData(), getCostOverview(), getGoogleStatus()])
+  const [overview, cost, google, todos] = await Promise.all([getOverviewData(), getCostOverview(), getGoogleStatus(), getTodos(8)])
 
   return (
     <section className="mx-auto max-w-7xl space-y-6">
@@ -37,6 +39,8 @@ export default async function DashboardPage() {
         <Badge variant={google?.ga4Ready ? 'secondary' : 'destructive'}>GA4 sync: {google?.ga4Ready ? 'ready' : 'niet geconfigureerd'}</Badge>
         <Badge variant={cost?.overBudgetAgents ? 'destructive' : 'secondary'}>Agent budget alerts: {cost?.overBudgetAgents ?? 0}</Badge>
       </div>
+
+      <TodoListCard items={todos} />
 
       <div className="grid gap-6 xl:grid-cols-3">
         {overview.workspaceStats.map((workspace) => {
