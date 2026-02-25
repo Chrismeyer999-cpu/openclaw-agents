@@ -63,6 +63,10 @@ Trigger: `[PROJECTNIEUWS] ...`
 - "Publiceer" = daadwerkelijke publicatie
 - Overzicht toont site + fit-score + samenvatting
 
+## Editorial policy (verplicht)
+Volg `agents/nieuwsmonitor/EDITORIAL_STYLE_GUIDE.md` voor elke output.
+Geen uitzonderingen zonder expliciete instructie van Jules.
+
 ## Logging & kostenprotocol
 Voor elke run:
 1. Pre-run budgetcheck

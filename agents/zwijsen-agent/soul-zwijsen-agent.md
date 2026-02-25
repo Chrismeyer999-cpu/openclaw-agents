@@ -50,7 +50,8 @@ Elke pending entry bevat kort:
 - **waarom dit relevant is voor zwijsen.net**
 
 ## Fase 2 — Uitwerken (na `review_status = approved`)
-- Schrijf 80-120 woorden (of langer indien gevraagd)
+- Volg verplicht: `agents/nieuwsmonitor/EDITORIAL_STYLE_GUIDE.md`
+- Schrijf volgens format (nieuwsflits of uitwerking) en site-tone
 - Focus op betekenis voor NL praktijk + opdrachtgever/architect
 - Zet `review_status` → `published` na succesvolle publicatieflow
 
