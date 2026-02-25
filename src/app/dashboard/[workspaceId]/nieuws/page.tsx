@@ -7,13 +7,25 @@ import { listNewsItems } from '@/lib/news'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 
-function relevanceScore(item: { title: string; summary: string | null; body: string | null; sourceType: string }) {
+function relevanceScore(item: { site: string; title: string; summary: string | null; body: string | null; sourceType: string }) {
   const text = [item.title, item.summary ?? '', item.body ?? '', item.sourceType].join(' ').toLowerCase()
-  const positiveTerms = ['architect', 'architectuur', 'woning', 'nieuwbouw', 'verbouw', 'kavel', 'omgevingswet', 'bouwkosten', 'ai', 'bim']
-  const negativeTerms = ['sport', 'entertainment', 'onderwijs', 'voetbal']
-  const pos = positiveTerms.filter((t) => text.includes(t)).length
-  const neg = negativeTerms.filter((t) => text.includes(t)).length
-  const raw = 0.45 + pos * 0.07 - neg * 0.08
+
+  const domainTerms: Record<string, string[]> = {
+    'kavelarchitect.nl': ['kavel', 'kaveluitgifte', 'bouwkavel', 'gebiedsontwikkeling', 'bestemmingsplan', 'omgevingsplan'],
+    'brikxai.nl': ['omgevingswet', 'wkb', 'vergunning', 'bouwbesluit', 'bouwkosten', 'verduurzaming', 'renovatie'],
+    'zwijsen.net': ['architect', 'architectuur', 'villa', 'ontwerp', 'interieur', 'ai', 'bim', 'generative', 'computational']
+  }
+
+  const genericPositive = ['woning', 'nieuwbouw', 'verbouw', 'bouwsector', 'construction']
+  const negativeTerms = ['sport', 'entertainment', 'wedstrijd', 'voetbal', 'celebrity']
+
+  const targetTerms = domainTerms[item.site] ?? []
+  const targetHits = targetTerms.filter((t) => text.includes(t)).length
+  const genericHits = genericPositive.filter((t) => text.includes(t)).length
+  const negativeHits = negativeTerms.filter((t) => text.includes(t)).length
+
+  const base = 0.52
+  const raw = base + targetHits * 0.09 + genericHits * 0.04 - negativeHits * 0.12
   return Math.max(0.05, Math.min(0.99, raw))
 }
 
