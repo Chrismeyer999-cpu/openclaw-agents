@@ -6,6 +6,19 @@ interface NewsTableProps {
   items: NewsItem[];
 }
 
+function siteLabel(item: NewsItem): string {
+  const agentTag = item.tags?.[0];
+  if (agentTag === "zwijsen-agent") return "zwijsen.net";
+  if (agentTag === "brikx-agent") return "brikxai.nl";
+  if (agentTag === "kavel-agent") return "kavelarchitect.nl";
+
+  const topic = item.topic?.toLowerCase() ?? "";
+  if (topic.includes("zwijsen-agent")) return "zwijsen.net";
+  if (topic.includes("brikx-agent")) return "brikxai.nl";
+  if (topic.includes("kavel-agent")) return "kavelarchitect.nl";
+  return "onbekend";
+}
+
 export function NewsTable({ items }: NewsTableProps) {
   if (!items.length) {
     return (
@@ -21,8 +34,9 @@ export function NewsTable({ items }: NewsTableProps) {
         <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
           <tr>
             <th className="px-4 py-3">Titel</th>
+            <th className="px-4 py-3">Bestemd voor</th>
             <th className="px-4 py-3">Bron</th>
-            <th className="px-4 py-3">Relevance</th>
+            <th className="px-4 py-3">Fit-score</th>
             <th className="px-4 py-3">Status</th>
             <th className="px-4 py-3">Acties</th>
           </tr>
@@ -36,7 +50,15 @@ export function NewsTable({ items }: NewsTableProps) {
                   {item.topic ? (
                     <p className="text-xs text-slate-500">{item.topic}</p>
                   ) : null}
+                  {item.summary ? (
+                    <p className="line-clamp-2 max-w-2xl text-xs text-slate-600">{item.summary}</p>
+                  ) : null}
                 </div>
+              </td>
+              <td className="px-4 py-3 text-sm text-slate-700">
+                <span className="rounded bg-slate-100 px-2 py-1 text-xs font-medium">
+                  {siteLabel(item)}
+                </span>
               </td>
               <td className="px-4 py-3 text-sm text-slate-600">
                 <a
@@ -48,8 +70,9 @@ export function NewsTable({ items }: NewsTableProps) {
                   {item.source_name || new URL(item.source_url ?? "https://example.com").hostname}
                 </a>
               </td>
-              <td className="px-4 py-3 font-mono text-xs text-slate-700">
-                {(item.relevance ?? 0).toFixed(2)}
+              <td className="px-4 py-3 text-xs text-slate-700">
+                <div className="font-mono">{(item.relevance ?? 0).toFixed(2)}</div>
+                <div className="text-[11px] text-slate-500">{Math.round((item.relevance ?? 0) * 100)}%</div>
               </td>
               <td className="px-4 py-3">
                 <StatusBadge status={item.review_status ?? "pending"} />
