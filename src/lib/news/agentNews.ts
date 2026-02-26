@@ -21,7 +21,10 @@ export async function listAgentNews(filters: NewsFilters): Promise<UnifiedNewsIt
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 
   if (filters.status && filters.status !== 'all') items = items.filter((item) => item.reviewStatus === filters.status)
-  if (filters.workspaceDomain && filters.workspaceDomain !== 'all') items = items.filter((item) => item.site === filters.workspaceDomain)
+  if (filters.workspaceDomain && filters.workspaceDomain !== 'all') {
+    const target = normalizeDomain(filters.workspaceDomain)
+    items = items.filter((item) => normalizeDomain(item.site) === target)
+  }
   if (filters.source && filters.source !== 'all') items = items.filter((item) => item.sourceType.toLowerCase() === filters.source?.toLowerCase())
   if (filters.q) items = items.filter((item) => item.title.toLowerCase().includes(filters.q!.toLowerCase()))
 
@@ -120,6 +123,16 @@ const NEGATIVE_TERMS = [
   'voetbal',
   'entertainment'
 ]
+
+function normalizeDomain(value: string | null | undefined) {
+  if (!value) return ''
+  return value
+    .toLowerCase()
+    .replace(/^https?:\/\//, '')
+    .replace(/^www\./, '')
+    .replace(/\/.*$/, '')
+    .trim()
+}
 
 function isDomainRelevant(item: UnifiedNewsItem) {
   const text = [item.title, item.summary, item.body, item.sourceUrl, item.sourceType].filter(Boolean).join(' ').toLowerCase()
