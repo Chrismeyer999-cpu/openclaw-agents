@@ -7,7 +7,7 @@ import { getGoogleStatus } from '@/lib/dashboard/getGoogleStatus'
 import { getTodos } from '@/lib/dashboard/getTodos'
 import { TodoListCard } from '@/components/dashboard/TodoListCard'
 import { GoogleSyncCard } from '@/components/dashboard/GoogleSyncCard'
-import { Newspaper, Search, TextSearch } from 'lucide-react'
+import { KpiStrip, SoftPill, StatusPills } from '@/components/dashboard/KpiStrip'
 import Link from 'next/link'
 
 export default async function DashboardPage() {
@@ -15,32 +15,33 @@ export default async function DashboardPage() {
 
   return (
     <section className="mx-auto max-w-7xl space-y-6">
-      <header className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-gray-100">Dashboard Overview</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400">Live overzicht van SEO- en LLM-signalen over alle workspaces.</p>
-        <Link href="/dashboard/nieuws" className="inline-flex text-sm font-medium text-orange-600 hover:text-orange-700 dark:text-orange-300 dark:hover:text-orange-200">
-          Open centraal Nieuws Center
-        </Link>
+      <header className="rounded-2xl border border-gray-200 bg-gradient-to-r from-white to-orange-50/60 p-5 shadow-sm dark:border-gray-800 dark:from-gray-900 dark:to-gray-900">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-gray-100">Dashboard Overview</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Live overzicht van SEO, LLM, kosten en operationele voortgang over alle workspaces.</p>
+        </div>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Link href="/dashboard/nieuws" className="inline-flex rounded-md bg-orange-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-orange-700">Nieuws Center</Link>
+          <Link href="/dashboard/google" className="inline-flex rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-200">Google Connections</Link>
+          <Link href="/dashboard/status" className="inline-flex rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-200">Roadmap & Status</Link>
+        </div>
       </header>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-        <MetricCard icon={<Search className="size-4 text-orange-500" />} label="Organic clicks (30d)" value={overview.totalClicks30d.toLocaleString('nl-NL')} />
-        <MetricCard icon={<TextSearch className="size-4 text-emerald-600" />} label="LLM mentions (30d)" value={overview.totalMentions30d.toLocaleString('nl-NL')} />
-        <MetricCard icon={<Badge variant="outline">{overview.structuredCoverage}%</Badge>} label="Structured coverage" value={`${overview.structuredCoverage}%`} />
-        <MetricCard icon={<Newspaper className="size-4 text-red-500" />} label="Pending nieuws" value={overview.pendingNieuws.toLocaleString('nl-NL')} />
-        <MetricCard
-          icon={<Badge variant={cost?.overBudgetAgents ? 'destructive' : 'secondary'}>{cost ? `${cost.overBudgetAgents} over` : 'n/a'}</Badge>}
-          label="Agent spend (month)"
-          value={cost ? `$${cost.monthUsd.toFixed(2)}` : 'n/a'}
-        />
-      </div>
+      <KpiStrip
+        items={[
+          { label: 'Organic clicks (30d)', value: overview.totalClicks30d.toLocaleString('nl-NL'), hint: 'Search Console', tone: 'default' },
+          { label: 'LLM mentions (30d)', value: overview.totalMentions30d.toLocaleString('nl-NL'), hint: 'AI visibility', tone: 'success' },
+          { label: 'Structured coverage', value: `${overview.structuredCoverage}%`, hint: 'Schema health', tone: 'default' },
+          { label: 'Pending nieuws', value: overview.pendingNieuws.toLocaleString('nl-NL'), hint: 'Review queue', tone: overview.pendingNieuws > 0 ? 'warning' : 'default' },
+          { label: 'Agent spend (month)', value: cost ? `$${cost.monthUsd.toFixed(2)}` : 'n/a', hint: `${cost?.overBudgetAgents ?? 0} over budget`, tone: (cost?.overBudgetAgents ?? 0) > 0 ? 'danger' : 'default' }
+        ]}
+      />
 
-      <div className="flex flex-wrap items-center gap-2">
-        <Badge variant="outline">Google Search Console: {google ? `${google.gscConnected}/${google.gscTotal} workspaces gekoppeld` : 'onbekend'}</Badge>
+      <StatusPills>
+        <SoftPill>Google Search Console: {google ? `${google.gscConnected}/${google.gscTotal} workspaces gekoppeld` : 'onbekend'}</SoftPill>
         <Badge variant={google?.ga4Ready ? 'secondary' : 'destructive'}>GA4 sync: {google?.ga4Ready ? 'ready' : 'niet geconfigureerd'}</Badge>
         <Badge variant={cost?.overBudgetAgents ? 'destructive' : 'secondary'}>Agent budget alerts: {cost?.overBudgetAgents ?? 0}</Badge>
-        <Link href="/dashboard/google" className="text-xs font-medium text-orange-600 hover:text-orange-700 dark:text-orange-300 dark:hover:text-orange-200">Open Google Connections</Link>
-      </div>
+      </StatusPills>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <TodoListCard items={todos} />
@@ -150,20 +151,6 @@ export default async function DashboardPage() {
         </Card>
       </div>
     </section>
-  )
-}
-
-function MetricCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
-  return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardDescription className="text-xs uppercase tracking-wide">{label}</CardDescription>
-        {icon}
-      </CardHeader>
-      <CardContent>
-        <p className="text-2xl font-semibold text-gray-900 dark:text-gray-100">{value}</p>
-      </CardContent>
-    </Card>
   )
 }
 

@@ -19,9 +19,12 @@ export function SidebarNav({ workspaces }: SidebarNavProps) {
   const pathname = usePathname()
 
   return (
-    <aside className="hidden border-r border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950 lg:block">
+    <aside className="hidden border-r border-gray-200 bg-white/95 backdrop-blur dark:border-gray-800 dark:bg-gray-950/95 lg:block">
       <div className="flex h-16 items-center border-b border-gray-200 px-5 dark:border-gray-800">
-        <p className="text-base font-semibold text-gray-900 dark:text-gray-100">SEO Dashboard</p>
+        <div>
+          <p className="text-base font-semibold text-gray-900 dark:text-gray-100">Mission Control</p>
+          <p className="text-[11px] text-gray-500 dark:text-gray-400">SEO • Agents • Content</p>
+        </div>
       </div>
       <nav className="space-y-6 p-4">
         <div className="space-y-1">
