@@ -12,7 +12,7 @@ const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token'
 const GSC_SCOPE = 'https://www.googleapis.com/auth/webmasters.readonly'
 const GA4_SCOPE = 'https://www.googleapis.com/auth/analytics.readonly'
 
-export async function POST() {
+export async function POST(request: Request) {
   const supabase = await createClient()
   const {
     data: { user },
@@ -27,26 +27,65 @@ export async function POST() {
   const all = (workspaces ?? []) as Workspace[]
   const snapshotDate = yesterdayIsoDate()
   const startDate = daysAgoIsoDate(30)
-  const results: Array<{ workspace: string; gscRows: number; ga4Rows: number; errors: string[] }> = []
+  const debug = reqUrlHasDebug(request)
+  const results: Array<{
+    workspace: string
+    gscRows: number
+    ga4Rows: number
+    errors: string[]
+    debug?: {
+      gscApiRowsRaw?: number
+      gscMatchedRows?: number
+      gscProperty?: string | null
+      ga4ApiRowsRaw?: number
+      ga4MatchedRows?: number
+      ga4Property?: string | null
+    }
+  }> = []
 
   for (const ws of all) {
     const errors: string[] = []
     let gscRows = 0
     let ga4Rows = 0
+    let gscApiRowsRaw = 0
+    let gscMatchedRows = 0
+    let ga4ApiRowsRaw = 0
+    let ga4MatchedRows = 0
 
     try {
-      gscRows = await syncWorkspaceGsc(supabase, ws, snapshotDate, startDate)
+      const gsc = await syncWorkspaceGsc(supabase, ws, snapshotDate, startDate)
+      gscRows = gsc.inserted
+      gscApiRowsRaw = gsc.apiRowsRaw
+      gscMatchedRows = gsc.matchedRows
     } catch (e) {
       errors.push(`GSC: ${toMessage(e)}`)
     }
 
     try {
-      ga4Rows = await syncWorkspaceGa4(supabase, ws, snapshotDate, startDate)
+      const ga4 = await syncWorkspaceGa4(supabase, ws, snapshotDate, startDate)
+      ga4Rows = ga4.inserted
+      ga4ApiRowsRaw = ga4.apiRowsRaw
+      ga4MatchedRows = ga4.matchedRows
     } catch (e) {
       errors.push(`GA4: ${toMessage(e)}`)
     }
 
-    results.push({ workspace: ws.domain, gscRows, ga4Rows, errors })
+    results.push({
+      workspace: ws.domain,
+      gscRows,
+      ga4Rows,
+      errors,
+      debug: debug
+        ? {
+            gscApiRowsRaw,
+            gscMatchedRows,
+            gscProperty: ws.gsc_property,
+            ga4ApiRowsRaw,
+            ga4MatchedRows,
+            ga4Property: process.env.GA4_PROPERTY_ID ?? null
+          }
+        : undefined
+    })
   }
 
   return NextResponse.json({
@@ -62,8 +101,8 @@ async function syncWorkspaceGsc(
   ws: Workspace,
   snapshotDate: string,
   startDate: string
-) {
-  if (!ws.gsc_property || !ws.gsc_refresh_token) return 0
+): Promise<{ inserted: number; apiRowsRaw: number; matchedRows: number }> {
+  if (!ws.gsc_property || !ws.gsc_refresh_token) return { inserted: 0, apiRowsRaw: 0, matchedRows: 0 }
 
   const token = await getOAuthAccessTokenFromRefresh(ws.gsc_refresh_token, GSC_SCOPE)
   if (!token) throw new Error('Geen GSC access token verkregen')
@@ -75,7 +114,7 @@ async function syncWorkspaceGsc(
 
   if (pagesError) throw new Error(pagesError.message)
   const pageRows = pages ?? []
-  if (pageRows.length === 0) return 0
+  if (pageRows.length === 0) return { inserted: 0, apiRowsRaw: 0, matchedRows: 0 }
 
   const byUrl = new Map<string, { id: string }>()
   pageRows.forEach((p) => byUrl.set(normalizeUrl(p.url), { id: p.id }))
@@ -115,14 +154,14 @@ async function syncWorkspaceGsc(
     })
   }
 
-  if (upserts.length === 0) return 0
+  if (upserts.length === 0) return { inserted: 0, apiRowsRaw: rows.length, matchedRows: 0 }
 
   const { error: upsertError } = await supabase
     .from('gsc_snapshots')
     .upsert(upserts, { onConflict: 'pillar_page_id,snapshot_date' })
 
   if (upsertError) throw new Error(upsertError.message)
-  return upserts.length
+  return { inserted: upserts.length, apiRowsRaw: rows.length, matchedRows: upserts.length }
 }
 
 async function syncWorkspaceGa4(
@@ -130,12 +169,12 @@ async function syncWorkspaceGa4(
   ws: Workspace,
   snapshotDate: string,
   startDate: string
-) {
+): Promise<{ inserted: number; apiRowsRaw: number; matchedRows: number }> {
   const propertyId = process.env.GA4_PROPERTY_ID?.trim()
-  if (!propertyId) return 0
+  if (!propertyId) return { inserted: 0, apiRowsRaw: 0, matchedRows: 0 }
 
   const token = await getServiceAccountAccessToken(GA4_SCOPE)
-  if (!token) return 0
+  if (!token) return { inserted: 0, apiRowsRaw: 0, matchedRows: 0 }
 
   const { data: pages, error: pagesError } = await supabase
     .from('pillar_pages')
@@ -145,7 +184,7 @@ async function syncWorkspaceGa4(
   if (pagesError) throw new Error(pagesError.message)
 
   const knownUrls = new Set((pages ?? []).map((p) => normalizeUrl(p.url)).filter(Boolean) as string[])
-  if (knownUrls.size === 0) return 0
+  if (knownUrls.size === 0) return { inserted: 0, apiRowsRaw: 0, matchedRows: 0 }
 
   const body = {
     dateRanges: [{ startDate, endDate: snapshotDate }],
@@ -188,14 +227,14 @@ async function syncWorkspaceGa4(
     })
   }
 
-  if (upserts.length === 0) return 0
+  if (upserts.length === 0) return { inserted: 0, apiRowsRaw: rows.length, matchedRows: 0 }
 
   const { error: upsertError } = await supabase
     .from('ga4_page_snapshots')
     .upsert(upserts, { onConflict: 'workspace_id,page_url,snapshot_date' })
 
   if (upsertError) throw new Error(upsertError.message)
-  return upserts.length
+  return { inserted: upserts.length, apiRowsRaw: rows.length, matchedRows: upserts.length }
 }
 
 async function getOAuthAccessTokenFromRefresh(refreshToken: string, scope: string) {
@@ -320,6 +359,15 @@ function normalizePrivateKey(raw?: string, b64?: string) {
     return key
   } catch {
     return null
+  }
+}
+
+function reqUrlHasDebug(request: Request) {
+  try {
+    const u = new URL(request.url)
+    return u.searchParams.get('debug') === '1'
+  } catch {
+    return false
   }
 }
 
