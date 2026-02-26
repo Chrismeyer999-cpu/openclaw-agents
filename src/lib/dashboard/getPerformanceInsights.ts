@@ -23,8 +23,14 @@ export interface PerformanceInsights {
     avgCtr: number
     avgPosition: number
     pages: number
+    deltaClicksPct: number
+    deltaSessionsPct: number
   }>
   pages: PageMetric[]
+  trendByDomain: Array<{
+    domain: string
+    points: Array<{ date: string; clicks: number; sessions: number }>
+  }>
 }
 
 export async function getPerformanceInsights(): Promise<PerformanceInsights> {
@@ -118,19 +124,81 @@ export async function getPerformanceInsights(): Promise<PerformanceInsights> {
     byDomainMap.set(p.domain, cur)
   })
 
-  const byDomain = [...byDomainMap.entries()].map(([domain, v]) => ({
-    domain,
-    clicks: v.clicks,
-    impressions: v.impressions,
-    sessions: v.sessions,
-    avgCtr: v.ctrN ? v.ctrSum / v.ctrN : 0,
-    avgPosition: v.posN ? v.posSum / v.posN : 0,
-    pages: v.pages
-  }))
+  const mid = new Date()
+  mid.setDate(mid.getDate() - 30)
+  const midDate = mid.toISOString().slice(0, 10)
+
+  const clicksByDomainNow = new Map<string, number>()
+  const clicksByDomainPrev = new Map<string, number>()
+  const pageDomainById = new Map(pageRows.map((p) => [p.id, workspaceMap.get(p.workspace_id) ?? 'unknown']))
+  gscRows.forEach((r: any) => {
+    const domain = pageDomainById.get(r.pillar_page_id) ?? 'unknown'
+    const target = r.snapshot_date >= midDate ? clicksByDomainNow : clicksByDomainPrev
+    target.set(domain, (target.get(domain) ?? 0) + Number(r.clicks ?? 0))
+  })
+
+  const sessionsByDomainNow = new Map<string, number>()
+  const sessionsByDomainPrev = new Map<string, number>()
+  const domainByWorkspace = new Map((workspaces ?? []).map((w) => [w.id, w.domain]))
+  gaRows.forEach((r: any) => {
+    const domain = domainByWorkspace.get(r.workspace_id) ?? 'unknown'
+    const target = r.snapshot_date >= midDate ? sessionsByDomainNow : sessionsByDomainPrev
+    target.set(domain, (target.get(domain) ?? 0) + Number(r.sessions ?? 0))
+  })
+
+  const byDomain = [...byDomainMap.entries()].map(([domain, v]) => {
+    const cNow = clicksByDomainNow.get(domain) ?? 0
+    const cPrev = clicksByDomainPrev.get(domain) ?? 0
+    const sNow = sessionsByDomainNow.get(domain) ?? 0
+    const sPrev = sessionsByDomainPrev.get(domain) ?? 0
+
+    const deltaClicksPct = cPrev > 0 ? ((cNow - cPrev) / cPrev) * 100 : cNow > 0 ? 100 : 0
+    const deltaSessionsPct = sPrev > 0 ? ((sNow - sPrev) / sPrev) * 100 : sNow > 0 ? 100 : 0
+
+    return {
+      domain,
+      clicks: v.clicks,
+      impressions: v.impressions,
+      sessions: v.sessions,
+      avgCtr: v.ctrN ? v.ctrSum / v.ctrN : 0,
+      avgPosition: v.posN ? v.posSum / v.posN : 0,
+      pages: v.pages,
+      deltaClicksPct,
+      deltaSessionsPct
+    }
+  })
+
+  const gscDaily = new Map<string, Map<string, number>>()
+  gscRows.forEach((r: any) => {
+    const domain = pageDomainById.get(r.pillar_page_id) ?? 'unknown'
+    const date = r.snapshot_date
+    if (!gscDaily.has(domain)) gscDaily.set(domain, new Map())
+    const d = gscDaily.get(domain)!
+    d.set(date, (d.get(date) ?? 0) + Number(r.clicks ?? 0))
+  })
+
+  const gaDaily = new Map<string, Map<string, number>>()
+  gaRows.forEach((r: any) => {
+    const domain = domainByWorkspace.get(r.workspace_id) ?? 'unknown'
+    const date = r.snapshot_date
+    if (!gaDaily.has(domain)) gaDaily.set(domain, new Map())
+    const d = gaDaily.get(domain)!
+    d.set(date, (d.get(date) ?? 0) + Number(r.sessions ?? 0))
+  })
+
+  const trendByDomain = byDomain.map((d) => {
+    const clickMap = gscDaily.get(d.domain) ?? new Map<string, number>()
+    const sessMap = gaDaily.get(d.domain) ?? new Map<string, number>()
+    const dates = Array.from(new Set([...clickMap.keys(), ...sessMap.keys()])).sort().slice(-14)
+    return {
+      domain: d.domain,
+      points: dates.map((date) => ({ date, clicks: clickMap.get(date) ?? 0, sessions: sessMap.get(date) ?? 0 }))
+    }
+  })
 
   const pagesSorted = pagesMetrics.sort((a, b) => b.clicks + b.sessions - (a.clicks + a.sessions)).slice(0, 80)
 
-  return { byDomain, pages: pagesSorted }
+  return { byDomain, pages: pagesSorted, trendByDomain }
 }
 
 function normalizePathFromUrl(input: string | null | undefined) {

@@ -20,11 +20,24 @@ export default async function PerformancePage() {
               <CardTitle className="text-base">{d.domain}</CardTitle>
               <CardDescription>{d.pages} gemonitorde pagina's</CardDescription>
             </CardHeader>
-            <CardContent className="grid grid-cols-2 gap-2 text-sm">
-              <Metric label="Clicks" value={d.clicks.toLocaleString('nl-NL')} />
-              <Metric label="Impressions" value={d.impressions.toLocaleString('nl-NL')} />
-              <Metric label="Sessions" value={d.sessions.toLocaleString('nl-NL')} />
-              <Metric label="Gem. CTR" value={`${(d.avgCtr * 100).toFixed(1)}%`} />
+            <CardContent className="space-y-3 text-sm">
+              <div className="grid grid-cols-2 gap-2">
+                <Metric label="Clicks" value={d.clicks.toLocaleString('nl-NL')} />
+                <Metric label="Impressions" value={d.impressions.toLocaleString('nl-NL')} />
+                <Metric label="Sessions" value={d.sessions.toLocaleString('nl-NL')} />
+                <Metric label="Gem. CTR" value={`${(d.avgCtr * 100).toFixed(1)}%`} />
+              </div>
+              <div className="flex items-center gap-2 text-xs">
+                <Badge variant={d.deltaClicksPct >= 0 ? 'secondary' : 'destructive'}>
+                  Clicks {d.deltaClicksPct >= 0 ? '+' : ''}{d.deltaClicksPct.toFixed(1)}%
+                </Badge>
+                <Badge variant={d.deltaSessionsPct >= 0 ? 'secondary' : 'destructive'}>
+                  Sessions {d.deltaSessionsPct >= 0 ? '+' : ''}{d.deltaSessionsPct.toFixed(1)}%
+                </Badge>
+              </div>
+              <MiniTrend
+                points={data.trendByDomain.find((t) => t.domain === d.domain)?.points ?? []}
+              />
             </CardContent>
           </Card>
         ))}
@@ -104,4 +117,29 @@ function statusBadge(impressions: number, ctr: number, sessions: number) {
   if (sessions > 50 && ctr > 0.03) return <Badge variant="secondary">Winner</Badge>
   if (impressions < 20 && sessions < 10) return <Badge variant="outline">Low traffic</Badge>
   return <Badge variant="outline">Monitor</Badge>
+}
+
+function MiniTrend({ points }: { points: Array<{ date: string; clicks: number; sessions: number }> }) {
+  if (!points.length) return <p className="text-[11px] text-gray-500">Nog geen trenddata.</p>
+
+  const max = Math.max(1, ...points.map((p) => p.clicks + p.sessions))
+
+  return (
+    <div>
+      <p className="mb-1 text-[11px] text-gray-500">Trend laatste 14 meetpunten</p>
+      <div className="flex h-12 items-end gap-1">
+        {points.map((p) => {
+          const val = p.clicks + p.sessions
+          const h = Math.max(8, Math.round((val / max) * 44))
+          return (
+            <div key={p.date} className="group relative flex-1 rounded-sm bg-orange-200/70 dark:bg-orange-500/40" style={{ height: `${h}px` }}>
+              <span className="pointer-events-none absolute -top-6 left-1/2 hidden -translate-x-1/2 whitespace-nowrap rounded bg-gray-900 px-1.5 py-0.5 text-[10px] text-white group-hover:block">
+                {p.clicks}c / {p.sessions}s
+              </span>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
 }
