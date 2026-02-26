@@ -48,28 +48,28 @@ export default async function DashboardPage() {
         <GoogleSyncCard />
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-3">
+      <div className="grid gap-4 xl:grid-cols-3">
         {overview.workspaceStats.map((workspace) => {
           const schemaCoverage = workspace.pages === 0 ? 0 : Math.round((workspace.pagesWithSchema / workspace.pages) * 100)
           return (
-            <Card key={workspace.id}>
-              <CardHeader className="space-y-1">
+            <Card key={workspace.id} className="overflow-hidden border-gray-200/90 shadow-sm dark:border-gray-800">
+              <CardHeader className="space-y-1 bg-gradient-to-r from-white to-gray-50 dark:from-gray-900 dark:to-gray-900">
                 <CardTitle className="text-base">{workspace.domain}</CardTitle>
                 <CardDescription>{workspace.displayName}</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 pt-4">
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <StatItem label="Pages" value={workspace.pages} />
                   <StatItem label="Schema" value={`${schemaCoverage}%`} />
                   <StatItem label="Clicks 30d" value={workspace.clicks30d} />
                   <StatItem label="LLM 30d" value={workspace.mentions30d} />
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between rounded-md border border-gray-200 p-2 dark:border-gray-800">
                   <Badge variant={workspace.pendingNieuws > 0 ? 'destructive' : 'secondary'}>
                     Pending nieuws: {workspace.pendingNieuws}
                   </Badge>
                   <Link href={`/dashboard/${workspace.id}`} className="text-sm font-medium text-orange-600 hover:text-orange-700 dark:text-orange-300 dark:hover:text-orange-200">
-                    Open workspace
+                    Open workspace →
                   </Link>
                 </div>
               </CardContent>
@@ -79,7 +79,7 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
+        <Card className="shadow-sm">
           <CardHeader>
             <CardTitle>Top pages op clicks (30d)</CardTitle>
             <CardDescription>Gescorteerd op GSC-clicks over de laatste 30 dagen.</CardDescription>
@@ -96,8 +96,8 @@ export default async function DashboardPage() {
               <TableBody>
                 {overview.topPages.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={3} className="text-center text-sm text-gray-500 dark:text-gray-400">
-                      Nog geen GSC-data gevonden.
+                    <TableCell colSpan={3} className="py-10 text-center text-sm text-gray-500 dark:text-gray-400">
+                      Nog geen GSC-data gevonden. Koppel Google Connections en run een sync.
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -113,7 +113,7 @@ export default async function DashboardPage() {
             </Table>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="shadow-sm">
           <CardHeader>
             <CardTitle>Pending nieuws</CardTitle>
             <CardDescription>Laatste items met review-status `pending`.</CardDescription>
@@ -130,8 +130,8 @@ export default async function DashboardPage() {
               <TableBody>
                 {overview.pendingItems.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={3} className="text-center text-sm text-gray-500 dark:text-gray-400">
-                      Geen pending nieuwsitems.
+                    <TableCell colSpan={3} className="py-10 text-center text-sm text-gray-500 dark:text-gray-400">
+                      Geen pending nieuwsitems. Netjes — queue is leeg.
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -156,8 +156,8 @@ export default async function DashboardPage() {
 
 function StatItem({ label, value }: { label: string; value: number | string }) {
   return (
-    <div className="rounded-md border border-gray-200 p-2 dark:border-gray-800">
-      <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
+    <div className="rounded-lg border border-gray-200 bg-gray-50/70 p-2 dark:border-gray-800 dark:bg-gray-900/60">
+      <p className="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">{label}</p>
       <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{value}</p>
     </div>
   )
