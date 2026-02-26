@@ -171,7 +171,7 @@ async function syncWorkspaceGsc(
     }
   }
 
-  const upserts: Array<Record<string, unknown>> = []
+  const aggregated = new Map<string, { pillar_page_id: string; clicks: number; impressions: number; positionWeighted: number }>()
   for (const row of rows) {
     const rawUrl = row.keys?.[0]
     const pageUrl = normalizeUrl(rawUrl)
@@ -180,15 +180,26 @@ async function syncWorkspaceGsc(
     const page = byUrl.get(pageUrl) ?? (pagePath ? byPath.get(pagePath) : undefined)
     if (!page) continue
 
-    upserts.push({
-      pillar_page_id: page.id,
-      snapshot_date: snapshotDate,
-      clicks: Math.round(Number(row.clicks ?? 0)),
-      impressions: Math.round(Number(row.impressions ?? 0)),
-      ctr: Number(row.ctr ?? 0),
-      avg_position: Number(row.position ?? 0)
-    })
+    const key = page.id
+    const clicks = Math.max(0, Math.round(Number(row.clicks ?? 0)))
+    const impressions = Math.max(0, Math.round(Number(row.impressions ?? 0)))
+    const position = Number(row.position ?? 0)
+
+    const cur = aggregated.get(key) ?? { pillar_page_id: page.id, clicks: 0, impressions: 0, positionWeighted: 0 }
+    cur.clicks += clicks
+    cur.impressions += impressions
+    cur.positionWeighted += position * Math.max(impressions, 1)
+    aggregated.set(key, cur)
   }
+
+  const upserts: Array<Record<string, unknown>> = [...aggregated.values()].map((v) => ({
+    pillar_page_id: v.pillar_page_id,
+    snapshot_date: snapshotDate,
+    clicks: v.clicks,
+    impressions: v.impressions,
+    ctr: v.impressions > 0 ? v.clicks / v.impressions : 0,
+    avg_position: v.impressions > 0 ? v.positionWeighted / v.impressions : 0
+  }))
 
   if (upserts.length === 0) return { inserted: 0, apiRowsRaw: rows.length, matchedRows: 0 }
 
@@ -244,7 +255,7 @@ async function syncWorkspaceGa4(
   const payload = (await res.json()) as { rows?: Ga4Row[] }
   const rows = payload.rows ?? []
 
-  const upserts: Array<Record<string, unknown>> = []
+  const aggregated = new Map<string, { page_url: string; sessions: number; engaged_sessions: number; engagement_rate_weighted: number; duration_weighted: number }>()
   for (const row of rows) {
     const path = row.dimensionValues?.[0]?.value ?? ''
     if (!path.startsWith('/')) continue
@@ -254,22 +265,30 @@ async function syncWorkspaceGa4(
     const pathMatched = Boolean(normalizedPath && knownPaths.has(normalizedPath))
     if (!urlMatched && !pathMatched) continue
 
-    const sessions = Number(row.metricValues?.[0]?.value ?? 0)
-    const engaged = Number(row.metricValues?.[1]?.value ?? 0)
-    const engagementRate = Number(row.metricValues?.[2]?.value ?? 0)
-    const engageDuration = Number(row.metricValues?.[3]?.value ?? 0)
+    const sessions = Math.max(0, Number(row.metricValues?.[0]?.value ?? 0))
+    const engaged = Math.max(0, Number(row.metricValues?.[1]?.value ?? 0))
+    const engagementRate = Math.max(0, Number(row.metricValues?.[2]?.value ?? 0))
+    const engageDuration = Math.max(0, Number(row.metricValues?.[3]?.value ?? 0))
 
-    upserts.push({
-      workspace_id: ws.id,
-      page_url: fullUrl,
-      snapshot_date: snapshotDate,
-      sessions: Math.round(sessions),
-      engaged_sessions: Math.round(engaged),
-      engagement_rate: engagementRate,
-      avg_engagement_time_s: engageDuration,
-      cta_clicks: 0
-    })
+    const key = fullUrl
+    const cur = aggregated.get(key) ?? { page_url: fullUrl, sessions: 0, engaged_sessions: 0, engagement_rate_weighted: 0, duration_weighted: 0 }
+    cur.sessions += sessions
+    cur.engaged_sessions += engaged
+    cur.engagement_rate_weighted += engagementRate * Math.max(sessions, 1)
+    cur.duration_weighted += engageDuration * Math.max(sessions, 1)
+    aggregated.set(key, cur)
   }
+
+  const upserts: Array<Record<string, unknown>> = [...aggregated.values()].map((v) => ({
+    workspace_id: ws.id,
+    page_url: v.page_url,
+    snapshot_date: snapshotDate,
+    sessions: Math.round(v.sessions),
+    engaged_sessions: Math.round(v.engaged_sessions),
+    engagement_rate: v.sessions > 0 ? v.engagement_rate_weighted / v.sessions : 0,
+    avg_engagement_time_s: v.sessions > 0 ? v.duration_weighted / v.sessions : 0,
+    cta_clicks: 0
+  }))
 
   if (upserts.length === 0) return { inserted: 0, apiRowsRaw: rows.length, matchedRows: 0 }
 
