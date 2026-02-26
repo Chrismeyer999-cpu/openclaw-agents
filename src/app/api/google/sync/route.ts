@@ -26,6 +26,7 @@ export async function POST() {
 
   const all = (workspaces ?? []) as Workspace[]
   const snapshotDate = yesterdayIsoDate()
+  const startDate = daysAgoIsoDate(30)
   const results: Array<{ workspace: string; gscRows: number; ga4Rows: number; errors: string[] }> = []
 
   for (const ws of all) {
@@ -34,13 +35,13 @@ export async function POST() {
     let ga4Rows = 0
 
     try {
-      gscRows = await syncWorkspaceGsc(supabase, ws, snapshotDate)
+      gscRows = await syncWorkspaceGsc(supabase, ws, snapshotDate, startDate)
     } catch (e) {
       errors.push(`GSC: ${toMessage(e)}`)
     }
 
     try {
-      ga4Rows = await syncWorkspaceGa4(supabase, ws, snapshotDate)
+      ga4Rows = await syncWorkspaceGa4(supabase, ws, snapshotDate, startDate)
     } catch (e) {
       errors.push(`GA4: ${toMessage(e)}`)
     }
@@ -56,7 +57,12 @@ export async function POST() {
   })
 }
 
-async function syncWorkspaceGsc(supabase: Awaited<ReturnType<typeof createClient>>, ws: Workspace, snapshotDate: string) {
+async function syncWorkspaceGsc(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  ws: Workspace,
+  snapshotDate: string,
+  startDate: string
+) {
   if (!ws.gsc_property || !ws.gsc_refresh_token) return 0
 
   const token = await getOAuthAccessTokenFromRefresh(ws.gsc_refresh_token, GSC_SCOPE)
@@ -66,7 +72,6 @@ async function syncWorkspaceGsc(supabase: Awaited<ReturnType<typeof createClient
     .from('pillar_pages')
     .select('id,url,page_type')
     .eq('workspace_id', ws.id)
-    .eq('page_type', 'nieuws')
 
   if (pagesError) throw new Error(pagesError.message)
   const pageRows = pages ?? []
@@ -76,7 +81,6 @@ async function syncWorkspaceGsc(supabase: Awaited<ReturnType<typeof createClient
   pageRows.forEach((p) => byUrl.set(normalizeUrl(p.url), { id: p.id }))
 
   const endDate = snapshotDate
-  const startDate = snapshotDate
   const body = {
     startDate,
     endDate,
@@ -121,7 +125,12 @@ async function syncWorkspaceGsc(supabase: Awaited<ReturnType<typeof createClient
   return upserts.length
 }
 
-async function syncWorkspaceGa4(supabase: Awaited<ReturnType<typeof createClient>>, ws: Workspace, snapshotDate: string) {
+async function syncWorkspaceGa4(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  ws: Workspace,
+  snapshotDate: string,
+  startDate: string
+) {
   const propertyId = process.env.GA4_PROPERTY_ID?.trim()
   if (!propertyId) return 0
 
@@ -132,7 +141,6 @@ async function syncWorkspaceGa4(supabase: Awaited<ReturnType<typeof createClient
     .from('pillar_pages')
     .select('url,page_type')
     .eq('workspace_id', ws.id)
-    .eq('page_type', 'nieuws')
 
   if (pagesError) throw new Error(pagesError.message)
 
@@ -140,7 +148,7 @@ async function syncWorkspaceGa4(supabase: Awaited<ReturnType<typeof createClient
   if (knownUrls.size === 0) return 0
 
   const body = {
-    dateRanges: [{ startDate: snapshotDate, endDate: snapshotDate }],
+    dateRanges: [{ startDate, endDate: snapshotDate }],
     dimensions: [{ name: 'pagePath' }],
     metrics: [{ name: 'sessions' }, { name: 'engagedSessions' }, { name: 'engagementRate' }, { name: 'userEngagementDuration' }],
     limit: 5000
@@ -265,8 +273,12 @@ function normalizeUrl(input: string | null | undefined) {
 }
 
 function yesterdayIsoDate() {
+  return daysAgoIsoDate(1)
+}
+
+function daysAgoIsoDate(days: number) {
   const d = new Date()
-  d.setDate(d.getDate() - 1)
+  d.setDate(d.getDate() - days)
   return d.toISOString().slice(0, 10)
 }
 
