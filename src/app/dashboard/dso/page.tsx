@@ -1,4 +1,5 @@
 import { DsoLookupForm } from '@/components/dashboard/DsoLookupForm'
+import { DsoJobRunner } from '@/components/dashboard/DsoJobRunner'
 
 export default function DsoPage() {
   return (
@@ -9,6 +10,7 @@ export default function DsoPage() {
       </header>
 
       <DsoLookupForm />
+      <DsoJobRunner />
     </section>
   )
 }
