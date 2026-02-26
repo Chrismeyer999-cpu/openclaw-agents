@@ -5,13 +5,14 @@ import { getOverviewData } from '@/lib/dashboard/getOverviewData'
 import { getCostOverview } from '@/lib/dashboard/getCostOverview'
 import { getGoogleStatus } from '@/lib/dashboard/getGoogleStatus'
 import { getTodos } from '@/lib/dashboard/getTodos'
+import { getPerformanceInsights } from '@/lib/dashboard/getPerformanceInsights'
 import { TodoListCard } from '@/components/dashboard/TodoListCard'
 import { GoogleSyncCard } from '@/components/dashboard/GoogleSyncCard'
 import { KpiStrip, SoftPill, StatusPills } from '@/components/dashboard/KpiStrip'
 import Link from 'next/link'
 
 export default async function DashboardPage() {
-  const [overview, cost, google, todos] = await Promise.all([getOverviewData(), getCostOverview(), getGoogleStatus(), getTodos(8)])
+  const [overview, cost, google, todos, perf] = await Promise.all([getOverviewData(), getCostOverview(), getGoogleStatus(), getTodos(8), getPerformanceInsights()])
 
   return (
     <section className="mx-auto max-w-7xl space-y-6">
@@ -42,6 +43,19 @@ export default async function DashboardPage() {
         <Badge variant={google?.ga4Ready ? 'secondary' : 'destructive'}>GA4 sync: {google?.ga4Ready ? 'ready' : 'niet geconfigureerd'}</Badge>
         <Badge variant={cost?.overBudgetAgents ? 'destructive' : 'secondary'}>Agent budget alerts: {cost?.overBudgetAgents ?? 0}</Badge>
       </StatusPills>
+
+      <div className="grid gap-3 md:grid-cols-3">
+        {perf.byDomain.slice(0, 3).map((d) => (
+          <div key={d.domain} className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+            <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{d.domain}</p>
+            <p className="text-xs text-gray-500">Clicks {d.clicks} · Sessions {d.sessions}</p>
+            <div className="mt-2 flex gap-2">
+              <Badge variant={d.deltaClicksPct >= 0 ? 'secondary' : 'destructive'}>Clicks {d.deltaClicksPct >= 0 ? '+' : ''}{d.deltaClicksPct.toFixed(1)}%</Badge>
+              <Badge variant={d.deltaSessionsPct >= 0 ? 'secondary' : 'destructive'}>Sessions {d.deltaSessionsPct >= 0 ? '+' : ''}{d.deltaSessionsPct.toFixed(1)}%</Badge>
+            </div>
+          </div>
+        ))}
+      </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <TodoListCard items={todos} />

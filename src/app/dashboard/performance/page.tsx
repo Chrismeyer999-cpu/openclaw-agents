@@ -2,9 +2,15 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { getPerformanceInsights } from '@/lib/dashboard/getPerformanceInsights'
+import Link from 'next/link'
 
-export default async function PerformancePage() {
+export default async function PerformancePage({ searchParams }: { searchParams: Promise<{ site?: string }> }) {
+  const params = await searchParams
+  const selectedSite = params.site ?? 'all'
   const data = await getPerformanceInsights()
+  const domains = data.byDomain.map((d) => d.domain)
+  const filteredDomains = selectedSite === 'all' ? data.byDomain : data.byDomain.filter((d) => d.domain === selectedSite)
+  const filteredPages = selectedSite === 'all' ? data.pages : data.pages.filter((p) => p.domain === selectedSite)
 
   return (
     <section className="mx-auto max-w-7xl space-y-6">
@@ -13,8 +19,15 @@ export default async function PerformancePage() {
         <p className="text-sm text-gray-500 dark:text-gray-400">Site-breed overzicht: wat goed presteert en wat aandacht nodig heeft (laatste 60 dagen).</p>
       </header>
 
+      <div className="flex flex-wrap gap-2">
+        <TabLink label="Alle sites" active={selectedSite === 'all'} href="/dashboard/performance" />
+        {domains.map((d) => (
+          <TabLink key={d} label={d} active={selectedSite === d} href={`/dashboard/performance?site=${encodeURIComponent(d)}`} />
+        ))}
+      </div>
+
       <div className="grid gap-4 md:grid-cols-3">
-        {data.byDomain.map((d) => (
+        {filteredDomains.map((d) => (
           <Card key={d.domain} className="shadow-sm">
             <CardHeader>
               <CardTitle className="text-base">{d.domain}</CardTitle>
@@ -64,10 +77,10 @@ export default async function PerformancePage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {data.pages.length === 0 ? (
+                {filteredPages.length === 0 ? (
                   <TableRow><TableCell colSpan={8} className="py-8 text-center text-sm text-gray-500">Nog geen performance data.</TableCell></TableRow>
                 ) : (
-                  data.pages.map((p) => (
+                  filteredPages.map((p) => (
                     <TableRow key={p.id}>
                       <TableCell className="max-w-[280px] truncate">{p.title}</TableCell>
                       <TableCell>{p.domain}</TableCell>
@@ -84,7 +97,7 @@ export default async function PerformancePage() {
             </Table>
           </div>
           <div className="space-y-2 md:hidden">
-            {data.pages.slice(0, 30).map((p) => (
+            {filteredPages.slice(0, 30).map((p) => (
               <div key={p.id} className="rounded-lg border border-gray-200 p-3 dark:border-gray-800">
                 <p className="line-clamp-2 text-sm font-medium">{p.title}</p>
                 <p className="text-xs text-gray-500">{p.domain}</p>
@@ -117,6 +130,17 @@ function statusBadge(impressions: number, ctr: number, sessions: number) {
   if (sessions > 50 && ctr > 0.03) return <Badge variant="secondary">Winner</Badge>
   if (impressions < 20 && sessions < 10) return <Badge variant="outline">Low traffic</Badge>
   return <Badge variant="outline">Monitor</Badge>
+}
+
+function TabLink({ href, label, active }: { href: string; label: string; active: boolean }) {
+  return (
+    <Link
+      href={href}
+      className={`rounded-full px-3 py-1.5 text-xs font-medium ${active ? 'bg-orange-600 text-white' : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-200'}`}
+    >
+      {label}
+    </Link>
+  )
 }
 
 function MiniTrend({ points }: { points: Array<{ date: string; clicks: number; sessions: number }> }) {
