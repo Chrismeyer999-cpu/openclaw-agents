@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { GoogleWorkspaceTestButton } from '@/components/dashboard/GoogleWorkspaceTestButton'
 import { GoogleWorkspaceGa4TestButton } from '@/components/dashboard/GoogleWorkspaceGa4TestButton'
+import { GoogleGa4AuthHealthCard } from '@/components/dashboard/GoogleGa4AuthHealthCard'
 
 export default async function GoogleConnectionsPage({
   searchParams
@@ -29,6 +30,8 @@ export default async function GoogleConnectionsPage({
 
       {params.connected ? <Badge variant="secondary">GSC koppeling opgeslagen.</Badge> : null}
       {params.error ? <Badge variant="destructive">Fout: {params.error}</Badge> : null}
+
+      <GoogleGa4AuthHealthCard />
 
       <div className="grid gap-4">
         {rows.map((w) => {
