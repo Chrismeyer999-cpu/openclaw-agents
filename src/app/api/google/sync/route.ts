@@ -184,7 +184,12 @@ async function syncWorkspaceGa4(
   if (pagesError) throw new Error(pagesError.message)
 
   const knownUrls = new Set((pages ?? []).map((p) => normalizeUrl(p.url)).filter(Boolean) as string[])
-  if (knownUrls.size === 0) return { inserted: 0, apiRowsRaw: 0, matchedRows: 0 }
+  const knownPaths = new Set(
+    (pages ?? [])
+      .map((p) => normalizePathFromUrl(p.url))
+      .filter(Boolean) as string[]
+  )
+  if (knownUrls.size === 0 && knownPaths.size === 0) return { inserted: 0, apiRowsRaw: 0, matchedRows: 0 }
 
   const body = {
     dateRanges: [{ startDate, endDate: snapshotDate }],
@@ -208,7 +213,10 @@ async function syncWorkspaceGa4(
     const path = row.dimensionValues?.[0]?.value ?? ''
     if (!path.startsWith('/')) continue
     const fullUrl = normalizeUrl(`https://${ws.domain}${path}`)
-    if (!fullUrl || !knownUrls.has(fullUrl)) continue
+    const normalizedPath = normalizePath(path)
+    const urlMatched = Boolean(fullUrl && knownUrls.has(fullUrl))
+    const pathMatched = Boolean(normalizedPath && knownPaths.has(normalizedPath))
+    if (!urlMatched && !pathMatched) continue
 
     const sessions = Number(row.metricValues?.[0]?.value ?? 0)
     const engaged = Number(row.metricValues?.[1]?.value ?? 0)
@@ -304,11 +312,30 @@ function normalizeUrl(input: string | null | undefined) {
   if (!input) return ''
   try {
     const u = new URL(input)
-    const pathname = u.pathname.replace(/\/$/, '') || '/'
+    const pathname = normalizePath(u.pathname)
     return `${u.protocol}//${u.host}${pathname}`.toLowerCase()
   } catch {
     return input.trim().toLowerCase().replace(/\/$/, '')
   }
+}
+
+function normalizePathFromUrl(input: string | null | undefined) {
+  if (!input) return ''
+  try {
+    const u = new URL(input)
+    return normalizePath(u.pathname)
+  } catch {
+    return normalizePath(input)
+  }
+}
+
+function normalizePath(path: string | null | undefined) {
+  if (!path) return ''
+  const p = path.trim()
+  if (!p) return ''
+  const withSlash = p.startsWith('/') ? p : `/${p}`
+  const noTrailing = withSlash.replace(/\/$/, '')
+  return (noTrailing || '/').toLowerCase()
 }
 
 function yesterdayIsoDate() {
