@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useState, useTransition } from 'react'
+import { DsoMapPreview } from '@/components/dashboard/DsoMapPreview'
 
 type LookupResult = {
   ok?: boolean
@@ -27,6 +28,25 @@ type LookupResult = {
     datum?: string
     error?: string
   }>
+  buildingContext?: {
+    hoofdgebouw?: {
+      verblijfsobject_id?: string
+      pand_id?: string
+      oppervlakte_verblijfsobject_m2?: number
+      bouwjaar?: number
+      pand_oppervlakte_min_m2?: number
+      pand_oppervlakte_max_m2?: number
+    } | null
+    pandenInOmgeving?: Array<{ pand_id?: string; oppervlakte_min_m2?: number; oppervlakte_max_m2?: number; bouwjaar?: number | null }>
+    mapGeoJson?: { features?: Array<any> }
+    note?: string
+  }
+  vergunningsvrijIndicatie?: {
+    disclaimer?: string
+    vermoedelijkMogelijk?: string[]
+    extraToetsen?: string[]
+    hoofdgebouwIndicatie?: string
+  }
 }
 
 export function DsoLookupForm() {
@@ -88,6 +108,29 @@ export function DsoLookupForm() {
               ))
             )}
           </div>
+
+          {result.buildingContext?.hoofdgebouw ? (
+            <div className="rounded-md border border-gray-200 p-3 text-sm dark:border-gray-800">
+              <p className="font-medium">Bestaande hoofdbebouwing (BAG)</p>
+              <p>Verblijfsobject: {result.buildingContext.hoofdgebouw.oppervlakte_verblijfsobject_m2 ?? '-'} m²</p>
+              <p>Pand opp. min/max: {result.buildingContext.hoofdgebouw.pand_oppervlakte_min_m2 ?? '-'} / {result.buildingContext.hoofdgebouw.pand_oppervlakte_max_m2 ?? '-'} m²</p>
+              <p>Bouwjaar: {result.buildingContext.hoofdgebouw.bouwjaar ?? '-'}</p>
+            </div>
+          ) : null}
+
+          {result.vergunningsvrijIndicatie ? (
+            <div className="rounded-md border border-gray-200 p-3 text-sm dark:border-gray-800">
+              <p className="font-medium">Vergunningsvrij (indicatie)</p>
+              <p className="text-xs text-gray-500">{result.vergunningsvrijIndicatie.disclaimer}</p>
+              <ul className="mt-2 list-disc pl-5">
+                {(result.vergunningsvrijIndicatie.vermoedelijkMogelijk ?? []).map((x, i) => (
+                  <li key={i}>{x}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+
+          <DsoMapPreview geojson={result.buildingContext?.mapGeoJson} />
         </div>
       ) : null}
     </div>
