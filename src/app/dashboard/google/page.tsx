@@ -45,7 +45,7 @@ export default async function GoogleConnectionsPage({
                 <div className="flex items-center justify-between">
                   <p className="text-xs text-gray-500 dark:text-gray-400">Refresh token {connected ? 'aanwezig' : 'ontbreekt'}</p>
                   <Button asChild size="sm">
-                    <Link href={`/api/google/connect?workspaceId=${w.id}`}>{connected ? 'Reconnect GSC' : 'Connect GSC'}</Link>
+                    <Link prefetch={false} href={`/api/google/connect?workspaceId=${w.id}`}>{connected ? 'Reconnect GSC' : 'Connect GSC'}</Link>
                   </Button>
                 </div>
                 {connected ? <GoogleWorkspaceTestButton workspaceId={w.id} /> : null}
