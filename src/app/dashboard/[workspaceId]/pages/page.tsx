@@ -13,17 +13,28 @@ export default async function WorkspacePagesPage({
   since.setDate(since.getDate() - 30)
   const sinceDate = since.toISOString().slice(0, 10)
 
-  const { data: pages, error: pagesError } = await supabase
+  const { data: pagesRaw, error: pagesError } = await supabase
     .from('pillar_pages')
-    .select('id, title, url, has_schema')
+    .select('*')
     .eq('workspace_id', workspaceId)
     .order('title')
 
   if (pagesError) {
-    throw new Error(`Kon pages niet laden: ${pagesError.message}`)
+    return (
+      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
+        Kon pagina-data niet laden: {pagesError.message}
+      </div>
+    )
   }
 
-  const pageIds = (pages ?? []).map((page) => page.id)
+  const pages = (pagesRaw ?? []).map((p: any) => ({
+    id: String(p.id),
+    title: String(p.title ?? p.url ?? 'Onbekende pagina'),
+    url: String(p.url ?? ''),
+    has_schema: Boolean(p.has_schema ?? p.schema_detected ?? false)
+  }))
+
+  const pageIds = pages.map((page) => page.id)
   let snapshots: { pillar_page_id: string; clicks: number; snapshot_date: string }[] = []
   if (pageIds.length > 0) {
     const { data, error } = await supabase
@@ -32,10 +43,9 @@ export default async function WorkspacePagesPage({
       .in('pillar_page_id', pageIds)
       .gte('snapshot_date', sinceDate)
 
-    if (error) {
-      throw new Error(`Kon GSC snapshots niet laden: ${error.message}`)
+    if (!error) {
+      snapshots = data ?? []
     }
-    snapshots = data ?? []
   }
 
   const clicksByPage = new Map<string, number>()
@@ -55,14 +65,14 @@ export default async function WorkspacePagesPage({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {(pages ?? []).length === 0 ? (
+          {pages.length === 0 ? (
             <TableRow>
               <TableCell colSpan={4} className="text-center text-sm text-gray-500 dark:text-gray-400">
                 Nog geen pillar pages in deze workspace.
               </TableCell>
             </TableRow>
           ) : (
-            (pages ?? []).map((page) => (
+            pages.map((page) => (
               <TableRow key={page.id}>
                 <TableCell className="font-medium">{page.title}</TableCell>
                 <TableCell className="max-w-[340px] truncate text-xs text-gray-500 dark:text-gray-400">{page.url}</TableCell>
