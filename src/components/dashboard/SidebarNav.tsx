@@ -1,7 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import { Globe, LayoutDashboard, ListChecks, Newspaper, Search, Target, TextSearch, Cpu } from 'lucide-react'
+import { Globe, LayoutDashboard, ListChecks, Newspaper, Search, Target, TextSearch, Cpu, MapPinned } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -32,6 +32,7 @@ export function SidebarNav({ workspaces }: SidebarNavProps) {
           <NavItem href="/dashboard" label="Dashboard" active={pathname === '/dashboard'} icon={LayoutDashboard} />
           <NavItem href="/dashboard/status" label="Roadmap & Status" active={pathname.startsWith('/dashboard/status')} icon={ListChecks} />
           <NavItem href="/dashboard/engine" label="AI-SEO Engine" active={pathname.startsWith('/dashboard/engine')} icon={Cpu} />
+          <NavItem href="/dashboard/dso" label="DSO Informatie" active={pathname.startsWith('/dashboard/dso')} icon={MapPinned} />
           <NavItem href="/dashboard/golf" label="Golf Mission Control" active={pathname.startsWith('/dashboard/golf')} icon={Target} />
         </div>
         <div className="space-y-2">
