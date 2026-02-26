@@ -31,7 +31,7 @@ export async function POST(request: Request) {
   const token = await getServiceAccountAccessToken(GA4_SCOPE)
   if (!token) return NextResponse.json({ error: 'Geen service-account access token verkregen' }, { status: 500 })
 
-  const startDate = daysAgoIsoDate(30)
+  const startDate = daysAgoIsoDate(60)
   const endDate = daysAgoIsoDate(1)
 
   const bodyPayload = {

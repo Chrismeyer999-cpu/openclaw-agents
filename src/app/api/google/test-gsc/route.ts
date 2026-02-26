@@ -30,7 +30,7 @@ export async function POST(request: Request) {
 
   const token = await getAccessToken(ws.gsc_refresh_token, clientId, clientSecret)
 
-  const startDate = daysAgoIsoDate(90)
+  const startDate = daysAgoIsoDate(60)
   const endDate = daysAgoIsoDate(1)
 
   const gscRes = await fetch(

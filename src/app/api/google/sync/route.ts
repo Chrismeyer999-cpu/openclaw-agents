@@ -26,7 +26,7 @@ export async function POST(request: Request) {
 
   const all = (workspaces ?? []) as Workspace[]
   const snapshotDate = yesterdayIsoDate()
-  const startDate = daysAgoIsoDate(30)
+  const startDate = daysAgoIsoDate(60)
   const debug = reqUrlHasDebug(request)
   const results: Array<{
     workspace: string
