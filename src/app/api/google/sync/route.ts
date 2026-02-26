@@ -2,7 +2,7 @@ import { createSign } from 'node:crypto'
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
-type Workspace = { id: string; domain: string; gsc_property: string | null; gsc_refresh_token: string | null }
+type Workspace = { id: string; domain: string; gsc_property: string | null; gsc_refresh_token: string | null; ga4_property?: string | null }
 
 type GscRow = { keys?: string[]; clicks?: number; impressions?: number; ctr?: number; position?: number }
 
@@ -21,7 +21,7 @@ export async function POST(request: Request) {
 
   if (userError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { data: workspaces, error } = await supabase.from('workspaces').select('id,domain,gsc_property,gsc_refresh_token')
+  const { data: workspaces, error } = await supabase.from('workspaces').select('id,domain,gsc_property,gsc_refresh_token,ga4_property')
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   const all = (workspaces ?? []) as Workspace[]
@@ -82,7 +82,7 @@ export async function POST(request: Request) {
             gscProperty: ws.gsc_property,
             ga4ApiRowsRaw,
             ga4MatchedRows,
-            ga4Property: process.env.GA4_PROPERTY_ID ?? null
+            ga4Property: ws.ga4_property ?? process.env.GA4_PROPERTY_ID ?? null
           }
         : undefined
     })
@@ -170,7 +170,7 @@ async function syncWorkspaceGa4(
   snapshotDate: string,
   startDate: string
 ): Promise<{ inserted: number; apiRowsRaw: number; matchedRows: number }> {
-  const propertyId = process.env.GA4_PROPERTY_ID?.trim()
+  const propertyId = (ws.ga4_property ?? process.env.GA4_PROPERTY_ID ?? '').trim()
   if (!propertyId) return { inserted: 0, apiRowsRaw: 0, matchedRows: 0 }
 
   const token = await getServiceAccountAccessToken(GA4_SCOPE)
