@@ -4,7 +4,9 @@ import { TopbarControls } from '@/components/dashboard/TopbarControls'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
-const DASHBOARD_BUILD = 'main@5004db5'
+const DASHBOARD_BUILD = process.env.VERCEL_GIT_COMMIT_SHA
+  ? `main@${process.env.VERCEL_GIT_COMMIT_SHA.slice(0, 7)}`
+  : 'local-dev'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
