@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
+import { GoogleWorkspaceTestButton } from '@/components/dashboard/GoogleWorkspaceTestButton'
 
 export default async function GoogleConnectionsPage({
   searchParams
@@ -40,11 +41,14 @@ export default async function GoogleConnectionsPage({
                 </div>
                 <Badge variant={connected ? 'secondary' : 'outline'}>{connected ? 'connected' : 'not connected'}</Badge>
               </CardHeader>
-              <CardContent className="flex items-center justify-between">
-                <p className="text-xs text-gray-500 dark:text-gray-400">Refresh token {connected ? 'aanwezig' : 'ontbreekt'}</p>
-                <Button asChild size="sm">
-                  <Link href={`/api/google/connect?workspaceId=${w.id}`}>{connected ? 'Reconnect GSC' : 'Connect GSC'}</Link>
-                </Button>
+              <CardContent className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Refresh token {connected ? 'aanwezig' : 'ontbreekt'}</p>
+                  <Button asChild size="sm">
+                    <Link href={`/api/google/connect?workspaceId=${w.id}`}>{connected ? 'Reconnect GSC' : 'Connect GSC'}</Link>
+                  </Button>
+                </div>
+                {connected ? <GoogleWorkspaceTestButton workspaceId={w.id} /> : null}
               </CardContent>
             </Card>
           )
