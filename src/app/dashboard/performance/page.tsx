@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { getPerformanceInsights } from '@/lib/dashboard/getPerformanceInsights'
 import Link from 'next/link'
+import { TopPagesBarChart, TrendLineChart } from '@/components/dashboard/PerformanceCharts'
 
 export default async function PerformancePage({ searchParams }: { searchParams: Promise<{ site?: string }> }) {
   const params = await searchParams
@@ -54,6 +55,21 @@ export default async function PerformancePage({ searchParams }: { searchParams: 
             </CardContent>
           </Card>
         ))}
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <TrendLineChart
+          title={selectedSite === 'all' ? 'Trend alle sites (clicks vs sessions)' : `Trend ${selectedSite}`}
+          points={
+            selectedSite === 'all'
+              ? mergeTrend(data.trendByDomain)
+              : data.trendByDomain.find((t) => t.domain === selectedSite)?.points ?? []
+          }
+        />
+        <TopPagesBarChart
+          title={selectedSite === 'all' ? 'Top pagina’s (combined traffic)' : `Top pagina’s ${selectedSite}`}
+          pages={filteredPages.map((p) => ({ title: p.title, clicks: p.clicks, sessions: p.sessions }))}
+        />
       </div>
 
       <Card className="shadow-sm">
@@ -141,6 +157,22 @@ function TabLink({ href, label, active }: { href: string; label: string; active:
       {label}
     </Link>
   )
+}
+
+function mergeTrend(trends: Array<{ domain: string; points: Array<{ date: string; clicks: number; sessions: number }> }>) {
+  const map = new Map<string, { clicks: number; sessions: number }>()
+  trends.forEach((t) => {
+    t.points.forEach((p) => {
+      const cur = map.get(p.date) ?? { clicks: 0, sessions: 0 }
+      cur.clicks += p.clicks
+      cur.sessions += p.sessions
+      map.set(p.date, cur)
+    })
+  })
+  return [...map.entries()]
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .slice(-14)
+    .map(([date, v]) => ({ date, clicks: v.clicks, sessions: v.sessions }))
 }
 
 function MiniTrend({ points }: { points: Array<{ date: string; clicks: number; sessions: number }> }) {
