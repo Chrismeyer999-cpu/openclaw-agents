@@ -1,7 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import { Globe, KeyRound, LayoutDashboard, ListChecks, MapPinned, Newspaper, Search, Target, TextSearch } from 'lucide-react'
+import { Globe, LayoutDashboard, LineChart, ListChecks, MapPinned, Newspaper, Search, Target, TextSearch } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -31,7 +31,7 @@ export function SidebarNav({ workspaces }: SidebarNavProps) {
           <p className="px-2 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Overview</p>
           <NavItem href="/dashboard" label="Dashboard" active={pathname === '/dashboard'} icon={LayoutDashboard} />
           <NavItem href="/dashboard/status" label="Roadmap & Status" active={pathname.startsWith('/dashboard/status')} icon={ListChecks} />
-          <NavItem href="/dashboard/google" label="Google Connections" active={pathname.startsWith('/dashboard/google')} icon={KeyRound} />
+          <NavItem href="/dashboard/performance" label="Performance Insights" active={pathname.startsWith('/dashboard/performance')} icon={LineChart} />
           <NavItem href="/dashboard/golf" label="Golf Mission Control" active={pathname.startsWith('/dashboard/golf')} icon={Target} />
           <NavItem href="/dashboard/nieuws" label="Nieuws Center" active={pathname.startsWith('/dashboard/nieuws')} icon={Newspaper} />
           <NavItem href="/dashboard/kavels" label="Kavels Center" active={pathname.startsWith('/dashboard/kavels')} icon={MapPinned} />
