@@ -58,7 +58,18 @@ export async function getSeoNewsById(id: string) {
 
 function findWorkspaceIdByDomain(workspaces: WorkspaceRow[], domain: string | null) {
   if (!domain || domain === 'all') return null
-  return workspaces.find((workspace) => workspace.domain === domain)?.id ?? null
+  const target = normalizeDomain(domain)
+  return workspaces.find((workspace) => normalizeDomain(workspace.domain) === target)?.id ?? null
+}
+
+function normalizeDomain(value: string | null | undefined) {
+  if (!value) return ''
+  return value
+    .toLowerCase()
+    .replace(/^https?:\/\//, '')
+    .replace(/^www\./, '')
+    .replace(/\/.*$/, '')
+    .trim()
 }
 
 function mapSeoRow(row: SeoNewsRow, site: string): UnifiedNewsItem {
