@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { GoogleWorkspaceTestButton } from '@/components/dashboard/GoogleWorkspaceTestButton'
+import { GoogleWorkspaceGa4TestButton } from '@/components/dashboard/GoogleWorkspaceGa4TestButton'
 
 export default async function GoogleConnectionsPage({
   searchParams
@@ -48,7 +49,12 @@ export default async function GoogleConnectionsPage({
                     <Link prefetch={false} href={`/api/google/connect?workspaceId=${w.id}`}>{connected ? 'Reconnect GSC' : 'Connect GSC'}</Link>
                   </Button>
                 </div>
-                {connected ? <GoogleWorkspaceTestButton workspaceId={w.id} /> : null}
+                {connected ? (
+                  <div className="grid gap-2 md:grid-cols-2">
+                    <GoogleWorkspaceTestButton workspaceId={w.id} />
+                    <GoogleWorkspaceGa4TestButton workspaceId={w.id} />
+                  </div>
+                ) : null}
               </CardContent>
             </Card>
           )
