@@ -1,7 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import { Globe, LayoutDashboard, LineChart, ListChecks, MapPinned, Newspaper, Search, Target, TextSearch } from 'lucide-react'
+import { Globe, LayoutDashboard, ListChecks, Newspaper, Search, Target, TextSearch } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -31,10 +31,7 @@ export function SidebarNav({ workspaces }: SidebarNavProps) {
           <p className="px-2 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Overview</p>
           <NavItem href="/dashboard" label="Dashboard" active={pathname === '/dashboard'} icon={LayoutDashboard} />
           <NavItem href="/dashboard/status" label="Roadmap & Status" active={pathname.startsWith('/dashboard/status')} icon={ListChecks} />
-          <NavItem href="/dashboard/performance" label="Performance Insights" active={pathname.startsWith('/dashboard/performance')} icon={LineChart} />
           <NavItem href="/dashboard/golf" label="Golf Mission Control" active={pathname.startsWith('/dashboard/golf')} icon={Target} />
-          <NavItem href="/dashboard/nieuws" label="Nieuws Center" active={pathname.startsWith('/dashboard/nieuws')} icon={Newspaper} />
-          <NavItem href="/dashboard/kavels" label="Kavels Center" active={pathname.startsWith('/dashboard/kavels')} icon={MapPinned} />
         </div>
         <div className="space-y-2">
           <p className="px-2 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Workspaces</p>
@@ -45,9 +42,9 @@ export function SidebarNav({ workspaces }: SidebarNavProps) {
               <div key={workspace.id} className="space-y-1 rounded-lg border border-gray-200 p-2 dark:border-gray-800">
                 <NavItem href={workspacePath} label={workspace.domain} active={activeWorkspace} icon={Globe} />
                 <div className="space-y-1 pl-8">
-                  <SubItem href={`${workspacePath}/pages`} label="Pages" active={pathname.startsWith(`${workspacePath}/pages`)} icon={Search} />
-                  <SubItem href={`${workspacePath}/llm`} label="LLM" active={pathname.startsWith(`${workspacePath}/llm`)} icon={TextSearch} />
-                  <SubItem href={`${workspacePath}/nieuws`} label="Nieuws" active={pathname.startsWith(`${workspacePath}/nieuws`)} icon={Newspaper} />
+                  <SubItem href={`${workspacePath}/pages`} label="Site pagina’s" active={pathname.startsWith(`${workspacePath}/pages`)} icon={Search} />
+                  <SubItem href={`${workspacePath}/llm`} label="LLM zichtbaarheid" active={pathname.startsWith(`${workspacePath}/llm`)} icon={TextSearch} />
+                  <SubItem href={`${workspacePath}/nieuws`} label="Nieuwsitems" active={pathname.startsWith(`${workspacePath}/nieuws`)} icon={Newspaper} />
                 </div>
               </div>
             )
