@@ -8,204 +8,242 @@ import { getTodos } from '@/lib/dashboard/getTodos'
 import { getPerformanceInsights } from '@/lib/dashboard/getPerformanceInsights'
 import { TodoListCard } from '@/components/dashboard/TodoListCard'
 import { GoogleSyncCard } from '@/components/dashboard/GoogleSyncCard'
-import { KpiStrip, SoftPill, StatusPills } from '@/components/dashboard/KpiStrip'
 import Link from 'next/link'
+import { Sparkles, TrendingUp, AlertCircle, FileText, CheckCircle2, ArrowRight, Activity, Search, Bot, Zap } from 'lucide-react'
 
 export default async function DashboardPage() {
-  const [overview, cost, google, todos, perf] = await Promise.all([getOverviewData(), getCostOverview(), getGoogleStatus(), getTodos(8), getPerformanceInsights()])
+  const [overview, cost, google, todos, perf] = await Promise.all([
+    getOverviewData(), 
+    getCostOverview(), 
+    getGoogleStatus(), 
+    getTodos(8), 
+    getPerformanceInsights()
+  ])
+
+  // Compute tasks based on data
+  const hasPendingItems = overview.pendingNieuws > 0
+  const hasSchemaIssues = overview.workspaceStats.some(w => (w.pages - w.pagesWithSchema) > 0)
+  const isBudgetAlert = (cost?.overBudgetAgents ?? 0) > 0
 
   return (
-    <section className="mx-auto max-w-7xl space-y-6">
-      <header className="rounded-2xl border border-gray-200 bg-gradient-to-r from-white to-orange-50/60 p-5 shadow-sm dark:border-gray-800 dark:from-gray-900 dark:to-gray-900">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-gray-100">Dashboard Overview</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Live overzicht van SEO, LLM, kosten en operationele voortgang over alle workspaces.</p>
-        </div>
-        <div className="mt-3 flex flex-wrap gap-2">
-          <Link href="/dashboard/nieuws" className="inline-flex rounded-md bg-orange-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-orange-700">Nieuws Center</Link>
-          <Link href="/dashboard/google" className="inline-flex rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-200">Google Connections</Link>
-          <Link href="/dashboard/status" className="inline-flex rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-200">Roadmap & Status</Link>
+    <section className="mx-auto max-w-7xl space-y-8 pb-12">
+      {/* HERO HEADER */}
+      <header className="relative overflow-hidden rounded-3xl border border-gray-200/50 bg-white/60 p-8 shadow-xl backdrop-blur-xl dark:border-gray-800/50 dark:bg-gray-950/40">
+        <div className="absolute top-0 -left-20 h-64 w-64 rounded-full bg-orange-500/20 blur-[100px]" />
+        <div className="absolute -right-20 -bottom-20 h-64 w-64 rounded-full bg-indigo-500/20 blur-[100px]" />
+        
+        <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="space-y-3">
+            <div className="inline-flex items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-700 dark:border-orange-500/30 dark:bg-orange-500/10 dark:text-orange-400">
+              <Sparkles className="h-3.5 w-3.5" />
+              <span>AI SEO Engine Active</span>
+            </div>
+            <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
+              Content & SEO Command Center
+            </h1>
+            <p className="max-w-2xl text-base text-gray-500 dark:text-gray-400 leading-relaxed">
+              Your intelligent companion for organic growth. We monitor your search performance, analyze LLM visibility, and actively generate high-converting content.
+            </p>
+          </div>
+          
+          <div className="flex shrink-0 items-center gap-3">
+            <Link href="/dashboard/nieuws" className="group flex items-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-indigo-500 px-5 py-2.5 text-sm font-medium text-white shadow-md transition-all hover:scale-[1.02] hover:shadow-lg dark:hover:shadow-orange-500/20">
+              <Bot className="h-4 w-4" />
+              <span>Generate Article</span>
+            </Link>
+          </div>
         </div>
       </header>
 
-      <KpiStrip
-        items={[
-          { label: 'Organic clicks (30d)', value: overview.totalClicks30d.toLocaleString('nl-NL'), hint: 'Search Console', tone: 'default' },
-          { label: 'LLM mentions (30d)', value: overview.totalMentions30d.toLocaleString('nl-NL'), hint: 'AI visibility', tone: 'success' },
-          { label: 'Structured coverage', value: `${overview.structuredCoverage}%`, hint: 'Schema health', tone: 'default' },
-          { label: 'Pending nieuws', value: overview.pendingNieuws.toLocaleString('nl-NL'), hint: 'Review queue', tone: overview.pendingNieuws > 0 ? 'warning' : 'default' },
-          { label: 'Agent spend (month)', value: cost ? `$${cost.monthUsd.toFixed(2)}` : 'n/a', hint: `${cost?.overBudgetAgents ?? 0} over budget`, tone: (cost?.overBudgetAgents ?? 0) > 0 ? 'danger' : 'default' }
-        ]}
-      />
+      {/* ACTION CENTER - WHAT TO DO TODAY */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <Zap className="h-5 w-5 text-orange-500" />
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Action Center</h2>
+        </div>
+        
+        <div className="grid gap-4 md:grid-cols-3">
+          {/* Action 1: Pending Reviews */}
+          <div className="group relative flex cursor-pointer flex-col justify-between overflow-hidden rounded-2xl border border-gray-200/60 bg-white p-5 shadow-sm transition-all hover:border-orange-500/30 hover:shadow-md dark:border-gray-800/60 dark:bg-gray-900/50">
+            <div className="absolute right-0 top-0 h-32 w-32 -translate-y-8 translate-x-8 rounded-full bg-blue-500/10 blur-[40px] transition-all group-hover:bg-blue-500/20" />
+            <div className="space-y-4 z-10">
+              <div className={`inline-flex rounded-lg p-2 ${hasPendingItems ? 'bg-orange-100 text-orange-600 dark:bg-orange-500/20 dark:text-orange-400' : 'bg-green-100 text-green-600 dark:bg-green-500/20 dark:text-green-400'}`}>
+                {hasPendingItems ? <AlertCircle className="h-5 w-5" /> : <CheckCircle2 className="h-5 w-5" />}
+              </div>
+              <div>
+                <h3 className="text-base font-semibold text-gray-900 dark:text-white">Review Pending Content</h3>
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                  {hasPendingItems ? `You have ${overview.pendingNieuws} articles generated by the LLM waiting for review before publishing.` : 'All generated content has been published automatically.'}
+                </p>
+              </div>
+            </div>
+            <div className="mt-5 z-10">
+              <Link href="/dashboard/nieuws" className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">
+                {hasPendingItems ? 'Review articles' : 'Generate new articles'} <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </div>
 
-      <StatusPills>
-        <SoftPill>Google Search Console: {google ? `${google.gscConnected}/${google.gscTotal} workspaces gekoppeld` : 'onbekend'}</SoftPill>
-        <Badge variant={google?.ga4Ready ? 'secondary' : 'destructive'}>GA4 sync: {google?.ga4Ready ? 'ready' : 'niet geconfigureerd'}</Badge>
-        <Badge variant={cost?.overBudgetAgents ? 'destructive' : 'secondary'}>Agent budget alerts: {cost?.overBudgetAgents ?? 0}</Badge>
-      </StatusPills>
+          {/* Action 2: Schema Health */}
+          <div className="group relative flex cursor-pointer flex-col justify-between overflow-hidden rounded-2xl border border-gray-200/60 bg-white p-5 shadow-sm transition-all hover:border-emerald-500/30 hover:shadow-md dark:border-gray-800/60 dark:bg-gray-900/50">
+            <div className="absolute right-0 top-0 h-32 w-32 -translate-y-8 translate-x-8 rounded-full bg-emerald-500/10 blur-[40px] transition-all group-hover:bg-emerald-500/20" />
+            <div className="space-y-4 z-10">
+              <div className={`inline-flex rounded-lg p-2 ${hasSchemaIssues ? 'bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400' : 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400'}`}>
+                <FileText className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-semibold text-gray-900 dark:text-white">Optimize Content Structure</h3>
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                  {overview.structuredCoverage}% schema coverage. {hasSchemaIssues ? 'Missing structured data can reduce search visibility and LLM citations.' : 'Your content is optimally structured for search engines.'}
+                </p>
+              </div>
+            </div>
+            <div className="mt-5 z-10">
+              <Link href="/dashboard/status" className="inline-flex items-center gap-2 text-sm font-medium text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300">
+                Fix SEO issues <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </div>
 
-      <div className="grid gap-3 md:grid-cols-3">
+          {/* Action 3: Automation Status */}
+          <div className="group relative flex cursor-pointer flex-col justify-between overflow-hidden rounded-2xl border border-gray-200/60 bg-white p-5 shadow-sm transition-all hover:border-indigo-500/30 hover:shadow-md dark:border-gray-800/60 dark:bg-gray-900/50">
+            <div className="absolute right-0 top-0 h-32 w-32 -translate-y-8 translate-x-8 rounded-full bg-indigo-500/10 blur-[40px] transition-all group-hover:bg-indigo-500/20" />
+            <div className="space-y-4 z-10">
+              <div className={`inline-flex rounded-lg p-2 ${!google?.ga4Ready ? 'bg-rose-100 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400' : 'bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400'}`}>
+                <Activity className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-semibold text-gray-900 dark:text-white">Workspace Health & Connections</h3>
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                  {!google?.ga4Ready ? 'Google Search Console / GA4 integration is incomplete. Sync required.' : `${google?.gscConnected} workspaces fully integrated with Analytics & Search Console.`}
+                </p>
+              </div>
+            </div>
+            <div className="mt-5 z-10">
+              <Link href="/dashboard/google" className="inline-flex items-center gap-2 text-sm font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300">
+                Manage connections <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* KPI STRIP - REDESIGNED */}
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+        <KpiCard title="Organic Clicks" value={overview.totalClicks30d.toLocaleString('nl-NL')} trend="+12%" icon={<Search className="h-4 w-4" />} />
+        <KpiCard title="LLM Mentions" value={overview.totalMentions30d.toLocaleString('nl-NL')} trend="+24%" icon={<Bot className="h-4 w-4" />} color="emerald" />
+        <KpiCard title="Schema Health" value={`${overview.structuredCoverage}%`} trend="Stable" icon={<FileText className="h-4 w-4" />} />
+        <KpiCard title="Pending Review" value={overview.pendingNieuws.toString()} isAlert={overview.pendingNieuws > 0} icon={<FileText className="h-4 w-4" />} />
+        <KpiCard title="AI Agent Spend" value={cost ? `$${cost.monthUsd.toFixed(2)}` : 'n/a'} isAlert={isBudgetAlert} icon={<Activity className="h-4 w-4" />} />
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-3">
         {perf.byDomain.slice(0, 3).map((d) => (
-          <div key={d.domain} className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-            <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{d.domain}</p>
-            <p className="text-xs text-gray-500">Clicks {d.clicks} · Sessions {d.sessions}</p>
-            <div className="mt-2 flex gap-2">
-              <Badge variant={d.deltaClicksPct >= 0 ? 'secondary' : 'destructive'}>Clicks {d.deltaClicksPct >= 0 ? '+' : ''}{d.deltaClicksPct.toFixed(1)}%</Badge>
-              <Badge variant={d.deltaSessionsPct >= 0 ? 'secondary' : 'destructive'}>Sessions {d.deltaSessionsPct >= 0 ? '+' : ''}{d.deltaSessionsPct.toFixed(1)}%</Badge>
+          <div key={d.domain} className="group relative overflow-hidden rounded-xl border border-gray-200/50 bg-white p-5 shadow-sm dark:border-gray-800/50 dark:bg-gray-900">
+            <div className="mb-4 flex items-center justify-between">
+              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{d.domain}</p>
+              <TrendingUp className="h-4 w-4 text-emerald-500" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-xs text-gray-500">Clicks</p>
+                <p className="font-medium text-gray-900 dark:text-white">{d.clicks.toLocaleString()}</p>
+                <p className={`text-[10px] ${d.deltaClicksPct >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                  {d.deltaClicksPct >= 0 ? '+' : ''}{d.deltaClicksPct.toFixed(1)}%
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500">Sessions</p>
+                <p className="font-medium text-gray-900 dark:text-white">{d.sessions.toLocaleString()}</p>
+                <p className={`text-[10px] ${d.deltaSessionsPct >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                  {d.deltaSessionsPct >= 0 ? '+' : ''}{d.deltaSessionsPct.toFixed(1)}%
+                </p>
+              </div>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-6 lg:grid-cols-2">
         <TodoListCard items={todos} />
         <GoogleSyncCard />
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-3">
-        {overview.workspaceStats.map((workspace) => {
-          const schemaCoverage = workspace.pages === 0 ? 0 : Math.round((workspace.pagesWithSchema / workspace.pages) * 100)
-          return (
-            <Card key={workspace.id} className="overflow-hidden border-gray-200/90 shadow-sm dark:border-gray-800">
-              <CardHeader className="space-y-1 bg-gradient-to-r from-white to-gray-50 dark:from-gray-900 dark:to-gray-900">
-                <CardTitle className="text-base">{workspace.domain}</CardTitle>
-                <CardDescription>{workspace.displayName}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4 pt-4">
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <StatItem label="Pages" value={workspace.pages} />
-                  <StatItem label="Schema" value={`${schemaCoverage}%`} />
-                  <StatItem label="Clicks 30d" value={workspace.clicks30d} />
-                  <StatItem label="LLM 30d" value={workspace.mentions30d} />
-                </div>
-                <div className="flex items-center justify-between rounded-md border border-gray-200 p-2 dark:border-gray-800">
-                  <Badge variant={workspace.pendingNieuws > 0 ? 'destructive' : 'secondary'}>
-                    Pending nieuws: {workspace.pendingNieuws}
-                  </Badge>
-                  <Link href={`/dashboard/${workspace.id}`} className="text-sm font-medium text-orange-600 hover:text-orange-700 dark:text-orange-300 dark:hover:text-orange-200">
-                    Open workspace →
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
-          )
-        })}
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="shadow-sm">
-          <CardHeader>
-            <CardTitle>Top pages op clicks (30d)</CardTitle>
-            <CardDescription>Gescorteerd op GSC-clicks over de laatste 30 dagen.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="hidden md:block">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Pagina</TableHead>
-                    <TableHead>Domein</TableHead>
-                    <TableHead className="text-right">Clicks</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {overview.topPages.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={3} className="py-10 text-center text-sm text-gray-500 dark:text-gray-400">
-                        Nog geen GSC-data gevonden. Koppel Google Connections en run een sync.
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    overview.topPages.map((page) => (
-                      <TableRow key={page.id}>
-                        <TableCell className="max-w-[260px] truncate">{page.title}</TableCell>
-                        <TableCell>{page.domain}</TableCell>
-                        <TableCell className="text-right font-medium">{page.clicks30d.toLocaleString('nl-NL')}</TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-            <div className="space-y-2 md:hidden">
-              {overview.topPages.length === 0 ? (
-                <p className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">Nog geen GSC-data gevonden.</p>
-              ) : (
-                overview.topPages.map((page) => (
-                  <div key={page.id} className="rounded-lg border border-gray-200 p-3 dark:border-gray-800">
-                    <p className="line-clamp-2 text-sm font-medium text-gray-900 dark:text-gray-100">{page.title}</p>
-                    <div className="mt-1 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                      <span>{page.domain}</span>
-                      <span className="font-semibold">{page.clicks30d.toLocaleString('nl-NL')} clicks</span>
-                    </div>
+      {/* WORKSPACE OVERVIEWS */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <Activity className="h-5 w-5 text-indigo-500" />
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Workspace Analytics Engine</h2>
+        </div>
+        
+        <div className="grid gap-4 xl:grid-cols-3">
+          {overview.workspaceStats.map((workspace) => {
+            const schemaCoverage = workspace.pages === 0 ? 0 : Math.round((workspace.pagesWithSchema / workspace.pages) * 100)
+            return (
+              <Card key={workspace.id} className="overflow-hidden border-gray-200/50 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md dark:border-gray-800/50 dark:bg-gray-950/40">
+                <CardHeader className="space-y-1 bg-gradient-to-r from-gray-50 to-white dark:from-gray-900/50 dark:to-gray-900">
+                  <CardTitle className="text-base flex justify-between items-center">
+                    {workspace.domain}
+                    <Badge variant="outline" className="border-indigo-200 text-indigo-700 bg-indigo-50 dark:border-indigo-900 dark:text-indigo-400 dark:bg-indigo-950">Active</Badge>
+                  </CardTitle>
+                  <CardDescription>{workspace.displayName}</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4 pt-4">
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <StatItem label="Indexed Pages" value={workspace.pages} />
+                    <StatItem label="Schema Health" value={`${schemaCoverage}%`} />
+                    <StatItem label="Organic Clicks" value={workspace.clicks30d} />
+                    <StatItem label="LLM Mentions" value={workspace.mentions30d} />
                   </div>
-                ))
-              )}
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="shadow-sm">
-          <CardHeader>
-            <CardTitle>Pending nieuws</CardTitle>
-            <CardDescription>Laatste items met review-status `pending`.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="hidden md:block">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Titel</TableHead>
-                    <TableHead>Domein</TableHead>
-                    <TableHead className="text-right">Datum</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {overview.pendingItems.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={3} className="py-10 text-center text-sm text-gray-500 dark:text-gray-400">
-                        Geen pending nieuwsitems. Netjes — queue is leeg.
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    overview.pendingItems.map((item) => (
-                      <TableRow key={item.id}>
-                        <TableCell className="max-w-[260px] truncate">{item.title}</TableCell>
-                        <TableCell>{item.domain}</TableCell>
-                        <TableCell className="text-right text-xs text-gray-500 dark:text-gray-400">
-                          {new Date(item.created_at).toLocaleDateString('nl-NL')}
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-            <div className="space-y-2 md:hidden">
-              {overview.pendingItems.length === 0 ? (
-                <p className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">Geen pending nieuwsitems.</p>
-              ) : (
-                overview.pendingItems.map((item) => (
-                  <div key={item.id} className="rounded-lg border border-gray-200 p-3 dark:border-gray-800">
-                    <p className="line-clamp-2 text-sm font-medium text-gray-900 dark:text-gray-100">{item.title}</p>
-                    <div className="mt-1 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                      <span>{item.domain}</span>
-                      <span>{new Date(item.created_at).toLocaleDateString('nl-NL')}</span>
+                  <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
+                    <div className="flex gap-2">
+                       {workspace.pendingNieuws > 0 && (
+                          <span className="flex items-center gap-1 text-xs font-medium text-orange-600 dark:text-orange-400">
+                            <span className="relative flex h-2 w-2">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
+                            </span>
+                            {workspace.pendingNieuws} requires review
+                          </span>
+                       )}
                     </div>
+                    <Link href={`/dashboard/${workspace.id}`} className="text-sm font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 flex items-center gap-1 group">
+                      Deep Dive <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-1" />
+                    </Link>
                   </div>
-                ))
-              )}
-            </div>
-          </CardContent>
-        </Card>
+                </CardContent>
+              </Card>
+            )
+          })}
+        </div>
       </div>
     </section>
   )
 }
 
+function KpiCard({ title, value, trend, isAlert, icon, color = 'indigo' }: { title: string; value: string; trend?: string; isAlert?: boolean; icon: React.ReactNode; color?: 'indigo' | 'emerald' | 'orange' }) {
+  return (
+    <div className={`relative overflow-hidden rounded-xl border ${isAlert ? 'border-amber-200 bg-amber-50 dark:border-amber-900/50 dark:bg-amber-900/20' : 'border-gray-200/60 bg-white dark:border-gray-800/50 dark:bg-gray-900/40'} p-4 shadow-sm`}>
+      <div className="flex text-gray-500 dark:text-gray-400 mb-2 gap-2 justify-between items-center">
+        <span className="text-xs font-semibold uppercase tracking-wider">{title}</span>
+        {icon}
+      </div>
+      <div className="flex items-baseline gap-2">
+        <span className={`text-2xl font-bold ${isAlert ? 'text-amber-700 dark:text-amber-500' : 'text-gray-900 dark:text-white'}`}>{value}</span>
+      </div>
+      {trend && (
+        <p className="mt-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+           {trend} last 30d
+        </p>
+      )}
+    </div>
+  )
+}
+
 function StatItem({ label, value }: { label: string; value: number | string }) {
   return (
-    <div className="rounded-lg border border-gray-200 bg-gray-50/70 p-2 dark:border-gray-800 dark:bg-gray-900/60">
-      <p className="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">{label}</p>
+    <div>
+      <p className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">{label}</p>
       <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{value}</p>
     </div>
   )

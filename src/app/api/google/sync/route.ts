@@ -77,13 +77,13 @@ export async function POST(request: Request) {
       errors,
       debug: debug
         ? {
-            gscApiRowsRaw,
-            gscMatchedRows,
-            gscProperty: ws.gsc_property,
-            ga4ApiRowsRaw,
-            ga4MatchedRows,
-            ga4Property: ws.ga4_property ?? process.env.GA4_PROPERTY_ID ?? null
-          }
+          gscApiRowsRaw,
+          gscMatchedRows,
+          gscProperty: ws.gsc_property,
+          ga4ApiRowsRaw,
+          ga4MatchedRows,
+          ga4Property: ws.ga4_property ?? process.env.GA4_PROPERTY_ID ?? null
+        }
         : undefined
     })
   }
@@ -123,11 +123,13 @@ async function syncWorkspaceGsc(
   })
 
   const endDate = snapshotDate
+  // Query with BOTH 'date' and 'page' dimensions so we get daily data points per page
+  // This enables the trend chart to show actual daily traffic over time
   const body = {
     startDate,
     endDate,
-    dimensions: ['page'],
-    rowLimit: 2500
+    dimensions: ['date', 'page'],
+    rowLimit: 5000
   }
 
   const res = await fetch(`https://searchconsole.googleapis.com/webmasters/v3/sites/${encodeURIComponent(ws.gsc_property)}/searchAnalytics/query`, {
@@ -141,8 +143,12 @@ async function syncWorkspaceGsc(
   const rows = payload.rows ?? []
 
   // Auto-expand pillar_pages from real GSC pages (prevents tiny 3-page dashboard)
+  // With date dimension, keys = [date, page_url]
+  const seenUrls = new Set<string>()
   for (const row of rows) {
-    const rawUrl = row.keys?.[0]
+    const rawUrl = row.keys?.[1] // keys[0]=date, keys[1]=page when using date+page dimensions
+    if (!rawUrl || seenUrls.has(rawUrl)) continue
+    seenUrls.add(rawUrl)
     const pageUrl = normalizeUrl(rawUrl)
     const pagePath = normalizePathFromUrl(rawUrl)
     if (!pageUrl || !pagePath) continue
@@ -171,21 +177,24 @@ async function syncWorkspaceGsc(
     }
   }
 
-  const aggregated = new Map<string, { pillar_page_id: string; clicks: number; impressions: number; positionWeighted: number }>()
+  // Aggregate per (pillar_page_id, date) — one snapshot row per page per day
+  const aggregated = new Map<string, { pillar_page_id: string; date: string; clicks: number; impressions: number; positionWeighted: number }>()
   for (const row of rows) {
-    const rawUrl = row.keys?.[0]
+    const rowDate = row.keys?.[0] // date dimension is first
+    const rawUrl = row.keys?.[1]  // page dimension is second
+    if (!rawUrl || !rowDate) continue
     const pageUrl = normalizeUrl(rawUrl)
     const pagePath = normalizePathFromUrl(rawUrl)
     if (!pageUrl) continue
     const page = byUrl.get(pageUrl) ?? (pagePath ? byPath.get(pagePath) : undefined)
     if (!page) continue
 
-    const key = page.id
+    const key = `${page.id}::${rowDate}`
     const clicks = Math.max(0, Math.round(Number(row.clicks ?? 0)))
     const impressions = Math.max(0, Math.round(Number(row.impressions ?? 0)))
     const position = Number(row.position ?? 0)
 
-    const cur = aggregated.get(key) ?? { pillar_page_id: page.id, clicks: 0, impressions: 0, positionWeighted: 0 }
+    const cur = aggregated.get(key) ?? { pillar_page_id: page.id, date: rowDate, clicks: 0, impressions: 0, positionWeighted: 0 }
     cur.clicks += clicks
     cur.impressions += impressions
     cur.positionWeighted += position * Math.max(impressions, 1)
@@ -194,7 +203,7 @@ async function syncWorkspaceGsc(
 
   const upserts: Array<Record<string, unknown>> = [...aggregated.values()].map((v) => ({
     pillar_page_id: v.pillar_page_id,
-    snapshot_date: snapshotDate,
+    snapshot_date: v.date,
     clicks: v.clicks,
     impressions: v.impressions,
     ctr: v.impressions > 0 ? v.clicks / v.impressions : 0,
