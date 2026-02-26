@@ -114,10 +114,13 @@ async function syncWorkspaceGsc(
 
   if (pagesError) throw new Error(pagesError.message)
   const pageRows = pages ?? []
-  if (pageRows.length === 0) return { inserted: 0, apiRowsRaw: 0, matchedRows: 0 }
 
   const byUrl = new Map<string, { id: string }>()
-  pageRows.forEach((p) => byUrl.set(normalizeUrl(p.url), { id: p.id }))
+  const byPath = new Map<string, { id: string }>()
+  pageRows.forEach((p) => {
+    byUrl.set(normalizeUrl(p.url), { id: p.id })
+    byPath.set(normalizePathFromUrl(p.url), { id: p.id })
+  })
 
   const endDate = snapshotDate
   const body = {
@@ -137,11 +140,44 @@ async function syncWorkspaceGsc(
   const payload = (await res.json()) as { rows?: GscRow[] }
   const rows = payload.rows ?? []
 
+  // Auto-expand pillar_pages from real GSC pages (prevents tiny 3-page dashboard)
+  for (const row of rows) {
+    const rawUrl = row.keys?.[0]
+    const pageUrl = normalizeUrl(rawUrl)
+    const pagePath = normalizePathFromUrl(rawUrl)
+    if (!pageUrl || !pagePath) continue
+
+    if (!byUrl.has(pageUrl) && !byPath.has(pagePath)) {
+      const insertPayload = {
+        workspace_id: ws.id,
+        url: pageUrl,
+        title: titleFromUrl(pageUrl),
+        page_type: inferPageType(pagePath),
+        intent_type: 'informational',
+        target_keywords: [],
+        expected_schema_types: []
+      }
+
+      const { data: inserted } = await supabase
+        .from('pillar_pages')
+        .insert(insertPayload)
+        .select('id,url')
+        .maybeSingle()
+
+      if (inserted?.id) {
+        byUrl.set(pageUrl, { id: inserted.id })
+        byPath.set(pagePath, { id: inserted.id })
+      }
+    }
+  }
+
   const upserts: Array<Record<string, unknown>> = []
   for (const row of rows) {
-    const pageUrl = normalizeUrl(row.keys?.[0])
+    const rawUrl = row.keys?.[0]
+    const pageUrl = normalizeUrl(rawUrl)
+    const pagePath = normalizePathFromUrl(rawUrl)
     if (!pageUrl) continue
-    const page = byUrl.get(pageUrl)
+    const page = byUrl.get(pageUrl) ?? (pagePath ? byPath.get(pagePath) : undefined)
     if (!page) continue
 
     upserts.push({
@@ -336,6 +372,27 @@ function normalizePath(path: string | null | undefined) {
   const withSlash = p.startsWith('/') ? p : `/${p}`
   const noTrailing = withSlash.replace(/\/$/, '')
   return (noTrailing || '/').toLowerCase()
+}
+
+function inferPageType(path: string): 'pillar' | 'regio' | 'faq' | 'kennisbank' | 'nieuws' {
+  const p = path.toLowerCase()
+  if (p.includes('/nieuws') || p.includes('/blog')) return 'nieuws'
+  if (p.includes('/faq') || p.includes('/veelgestelde-vragen')) return 'faq'
+  if (p.includes('/kennisbank')) return 'kennisbank'
+  if (p.includes('/regio') || p.includes('/locatie')) return 'regio'
+  return 'pillar'
+}
+
+function titleFromUrl(url: string) {
+  try {
+    const u = new URL(url)
+    const path = u.pathname.replace(/\/$/, '')
+    if (!path || path === '') return 'Homepage'
+    const last = path.split('/').filter(Boolean).pop() ?? 'Pagina'
+    return decodeURIComponent(last).replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim() || 'Pagina'
+  } catch {
+    return 'Pagina'
+  }
 }
 
 function yesterdayIsoDate() {
