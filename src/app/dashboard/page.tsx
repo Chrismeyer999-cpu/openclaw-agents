@@ -85,32 +85,49 @@ export default async function DashboardPage() {
             <CardDescription>Gescorteerd op GSC-clicks over de laatste 30 dagen.</CardDescription>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Pagina</TableHead>
-                  <TableHead>Domein</TableHead>
-                  <TableHead className="text-right">Clicks</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {overview.topPages.length === 0 ? (
+            <div className="hidden md:block">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={3} className="py-10 text-center text-sm text-gray-500 dark:text-gray-400">
-                      Nog geen GSC-data gevonden. Koppel Google Connections en run een sync.
-                    </TableCell>
+                    <TableHead>Pagina</TableHead>
+                    <TableHead>Domein</TableHead>
+                    <TableHead className="text-right">Clicks</TableHead>
                   </TableRow>
-                ) : (
-                  overview.topPages.map((page) => (
-                    <TableRow key={page.id}>
-                      <TableCell className="max-w-[260px] truncate">{page.title}</TableCell>
-                      <TableCell>{page.domain}</TableCell>
-                      <TableCell className="text-right font-medium">{page.clicks30d.toLocaleString('nl-NL')}</TableCell>
+                </TableHeader>
+                <TableBody>
+                  {overview.topPages.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={3} className="py-10 text-center text-sm text-gray-500 dark:text-gray-400">
+                        Nog geen GSC-data gevonden. Koppel Google Connections en run een sync.
+                      </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+                  ) : (
+                    overview.topPages.map((page) => (
+                      <TableRow key={page.id}>
+                        <TableCell className="max-w-[260px] truncate">{page.title}</TableCell>
+                        <TableCell>{page.domain}</TableCell>
+                        <TableCell className="text-right font-medium">{page.clicks30d.toLocaleString('nl-NL')}</TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+            <div className="space-y-2 md:hidden">
+              {overview.topPages.length === 0 ? (
+                <p className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">Nog geen GSC-data gevonden.</p>
+              ) : (
+                overview.topPages.map((page) => (
+                  <div key={page.id} className="rounded-lg border border-gray-200 p-3 dark:border-gray-800">
+                    <p className="line-clamp-2 text-sm font-medium text-gray-900 dark:text-gray-100">{page.title}</p>
+                    <div className="mt-1 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                      <span>{page.domain}</span>
+                      <span className="font-semibold">{page.clicks30d.toLocaleString('nl-NL')} clicks</span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </CardContent>
         </Card>
         <Card className="shadow-sm">
@@ -119,34 +136,51 @@ export default async function DashboardPage() {
             <CardDescription>Laatste items met review-status `pending`.</CardDescription>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Titel</TableHead>
-                  <TableHead>Domein</TableHead>
-                  <TableHead className="text-right">Datum</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {overview.pendingItems.length === 0 ? (
+            <div className="hidden md:block">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={3} className="py-10 text-center text-sm text-gray-500 dark:text-gray-400">
-                      Geen pending nieuwsitems. Netjes — queue is leeg.
-                    </TableCell>
+                    <TableHead>Titel</TableHead>
+                    <TableHead>Domein</TableHead>
+                    <TableHead className="text-right">Datum</TableHead>
                   </TableRow>
-                ) : (
-                  overview.pendingItems.map((item) => (
-                    <TableRow key={item.id}>
-                      <TableCell className="max-w-[260px] truncate">{item.title}</TableCell>
-                      <TableCell>{item.domain}</TableCell>
-                      <TableCell className="text-right text-xs text-gray-500 dark:text-gray-400">
-                        {new Date(item.created_at).toLocaleDateString('nl-NL')}
+                </TableHeader>
+                <TableBody>
+                  {overview.pendingItems.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={3} className="py-10 text-center text-sm text-gray-500 dark:text-gray-400">
+                        Geen pending nieuwsitems. Netjes — queue is leeg.
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+                  ) : (
+                    overview.pendingItems.map((item) => (
+                      <TableRow key={item.id}>
+                        <TableCell className="max-w-[260px] truncate">{item.title}</TableCell>
+                        <TableCell>{item.domain}</TableCell>
+                        <TableCell className="text-right text-xs text-gray-500 dark:text-gray-400">
+                          {new Date(item.created_at).toLocaleDateString('nl-NL')}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+            <div className="space-y-2 md:hidden">
+              {overview.pendingItems.length === 0 ? (
+                <p className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">Geen pending nieuwsitems.</p>
+              ) : (
+                overview.pendingItems.map((item) => (
+                  <div key={item.id} className="rounded-lg border border-gray-200 p-3 dark:border-gray-800">
+                    <p className="line-clamp-2 text-sm font-medium text-gray-900 dark:text-gray-100">{item.title}</p>
+                    <div className="mt-1 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                      <span>{item.domain}</span>
+                      <span>{new Date(item.created_at).toLocaleDateString('nl-NL')}</span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>
