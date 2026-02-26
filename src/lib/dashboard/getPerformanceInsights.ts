@@ -34,15 +34,16 @@ export interface PerformanceInsights {
 }
 
 export async function getPerformanceInsights(): Promise<PerformanceInsights> {
-  const supabase = await createClient()
-  const since = new Date()
-  since.setDate(since.getDate() - 60)
-  const sinceDate = since.toISOString().slice(0, 10)
+  try {
+    const supabase = await createClient()
+    const since = new Date()
+    since.setDate(since.getDate() - 60)
+    const sinceDate = since.toISOString().slice(0, 10)
 
-  const [{ data: workspaces }, { data: pages }] = await Promise.all([
-    supabase.from('workspaces').select('id,domain'),
-    supabase.from('pillar_pages').select('id,workspace_id,title,url')
-  ])
+    const [{ data: workspaces }, { data: pages }] = await Promise.all([
+      supabase.from('workspaces').select('id,domain'),
+      supabase.from('pillar_pages').select('id,workspace_id,title,url')
+    ])
 
   const workspaceMap = new Map((workspaces ?? []).map((w) => [w.id, w.domain]))
   const pageRows = pages ?? []
@@ -199,6 +200,9 @@ export async function getPerformanceInsights(): Promise<PerformanceInsights> {
   const pagesSorted = pagesMetrics.sort((a, b) => b.clicks + b.sessions - (a.clicks + a.sessions)).slice(0, 80)
 
   return { byDomain, pages: pagesSorted, trendByDomain }
+  } catch {
+    return { byDomain: [], pages: [], trendByDomain: [] }
+  }
 }
 
 function normalizePathFromUrl(input: string | null | undefined) {
