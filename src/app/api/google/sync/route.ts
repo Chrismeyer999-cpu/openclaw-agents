@@ -249,9 +249,9 @@ async function syncWorkspaceGa4(
 
   const body = {
     dateRanges: [{ startDate, endDate: snapshotDate }],
-    dimensions: [{ name: 'pagePath' }],
+    dimensions: [{ name: 'date' }, { name: 'pagePath' }],
     metrics: [{ name: 'sessions' }, { name: 'engagedSessions' }, { name: 'engagementRate' }, { name: 'userEngagementDuration' }],
-    limit: 5000
+    limit: 50000
   }
 
   const res = await fetch(`https://analyticsdata.googleapis.com/v1beta/properties/${propertyId}:runReport`, {
@@ -264,10 +264,15 @@ async function syncWorkspaceGa4(
   const payload = (await res.json()) as { rows?: Ga4Row[] }
   const rows = payload.rows ?? []
 
-  const aggregated = new Map<string, { page_url: string; sessions: number; engaged_sessions: number; engagement_rate_weighted: number; duration_weighted: number }>()
+  const aggregated = new Map<string, { page_url: string; date: string; sessions: number; engaged_sessions: number; engagement_rate_weighted: number; duration_weighted: number }>()
   for (const row of rows) {
-    const path = row.dimensionValues?.[0]?.value ?? ''
-    if (!path.startsWith('/')) continue
+    const rawDate = row.dimensionValues?.[0]?.value ?? ''
+    const path = row.dimensionValues?.[1]?.value ?? ''
+    if (!path.startsWith('/') || !rawDate) continue
+
+    // GA4 date is YYYYMMDD, convert to YYYY-MM-DD
+    const finalDate = rawDate.length === 8 ? `${rawDate.slice(0, 4)}-${rawDate.slice(4, 6)}-${rawDate.slice(6, 8)}` : snapshotDate
+
     const fullUrl = normalizeUrl(`https://${ws.domain}${path}`)
     const normalizedPath = normalizePath(path)
     const urlMatched = Boolean(fullUrl && knownUrls.has(fullUrl))
@@ -279,8 +284,8 @@ async function syncWorkspaceGa4(
     const engagementRate = Math.max(0, Number(row.metricValues?.[2]?.value ?? 0))
     const engageDuration = Math.max(0, Number(row.metricValues?.[3]?.value ?? 0))
 
-    const key = fullUrl
-    const cur = aggregated.get(key) ?? { page_url: fullUrl, sessions: 0, engaged_sessions: 0, engagement_rate_weighted: 0, duration_weighted: 0 }
+    const key = `${fullUrl}::${finalDate}`
+    const cur = aggregated.get(key) ?? { page_url: fullUrl, date: finalDate, sessions: 0, engaged_sessions: 0, engagement_rate_weighted: 0, duration_weighted: 0 }
     cur.sessions += sessions
     cur.engaged_sessions += engaged
     cur.engagement_rate_weighted += engagementRate * Math.max(sessions, 1)
@@ -291,7 +296,7 @@ async function syncWorkspaceGa4(
   const upserts: Array<Record<string, unknown>> = [...aggregated.values()].map((v) => ({
     workspace_id: ws.id,
     page_url: v.page_url,
-    snapshot_date: snapshotDate,
+    snapshot_date: v.date,
     sessions: Math.round(v.sessions),
     engaged_sessions: Math.round(v.engaged_sessions),
     engagement_rate: v.sessions > 0 ? v.engagement_rate_weighted / v.sessions : 0,

@@ -92,36 +92,41 @@ function normalizeReviewStatus(value: string) {
   return 'pending'
 }
 
-const POSITIVE_TERMS = [
-  'architect',
-  'architectuur',
-  'woning',
-  'woningbouw',
-  'nieuwbouw',
-  'verbouw',
-  'kavel',
-  'bestemmingsplan',
-  'omgevingswet',
-  'omgevingsplan',
-  'omgevingsvergunning',
-  'bouwvergunning',
-  'bouwbesluit',
-  'bouwkosten',
-  'aannemer',
-  'ruimtelijke ordening',
-  'duurzaam bouwen'
+const POSITIVE_TERMS: Array<{ term: string; weight: number }> = [
+  { term: 'bestemmingsplan', weight: 4 },
+  { term: 'omgevingswet', weight: 4 },
+  { term: 'omgevingsplan', weight: 4 },
+  { term: 'omgevingsvergunning', weight: 4 },
+  { term: 'bouwbesluit', weight: 3 },
+  { term: 'bbl', weight: 3 },
+  { term: 'wkb', weight: 3 },
+  { term: 'kavel', weight: 3 },
+  { term: 'woningbouw', weight: 3 },
+  { term: 'vergunningsvrij', weight: 3 },
+  { term: 'subsidie', weight: 2 },
+  { term: 'architect', weight: 2 },
+  { term: 'architectuur', weight: 2 },
+  { term: 'nieuwbouw', weight: 2 },
+  { term: 'verbouw', weight: 2 },
+  { term: 'bouwkosten', weight: 2 },
+  { term: 'aannemer', weight: 1 },
+  { term: 'ruimtelijke ordening', weight: 2 },
+  { term: 'duurzaam bouwen', weight: 2 },
+  { term: 'isolatie', weight: 1 },
+  { term: 'warmtepomp', weight: 1 },
+  { term: 'vve', weight: 1 }
 ]
 
-const NEGATIVE_TERMS = [
-  'basisonderwijs',
-  'onderwijs',
-  'school',
-  'curriculum',
-  'leraren',
-  'zorg',
-  'sport',
-  'voetbal',
-  'entertainment'
+const NEGATIVE_TERMS: Array<{ term: string; weight: number }> = [
+  { term: 'basisonderwijs', weight: 4 },
+  { term: 'curriculum', weight: 3 },
+  { term: 'leraren', weight: 3 },
+  { term: 'zorg', weight: 2 },
+  { term: 'sport', weight: 3 },
+  { term: 'voetbal', weight: 3 },
+  { term: 'entertainment', weight: 3 },
+  { term: 'radiology', weight: 3 },
+  { term: 'drug discovery', weight: 3 }
 ]
 
 function normalizeDomain(value: string | null | undefined) {
@@ -134,12 +139,21 @@ function normalizeDomain(value: string | null | undefined) {
     .trim()
 }
 
+const HARD_BLOCK_TERMS = ['chatgpt', 'gpt-5', 'openai', 'gemini', 'nvidia ai day', 'cybersecurity']
+const TRUSTED_SOURCE_HINTS = ['nos.nl', 'bnr.nl', 'cobouw.nl', 'bouwwereld.nl', 'rijksoverheid.nl', 'rvo.nl', 'architectenweb.nl']
+
 function isDomainRelevant(item: UnifiedNewsItem) {
   const text = [item.title, item.summary, item.body, item.sourceUrl, item.sourceType].filter(Boolean).join(' ').toLowerCase()
+  const sourceUrl = (item.sourceUrl ?? '').toLowerCase()
 
-  const hasPositive = POSITIVE_TERMS.some((term) => text.includes(term))
-  const hasNegative = NEGATIVE_TERMS.some((term) => text.includes(term))
+  const positiveScore = POSITIVE_TERMS.reduce((score, token) => (text.includes(token.term) ? score + token.weight : score), 0)
+  const negativeScore = NEGATIVE_TERMS.reduce((score, token) => (text.includes(token.term) ? score + token.weight : score), 0)
+  const hasHardBlock = HARD_BLOCK_TERMS.some((term) => text.includes(term))
+  const isTrustedSource = TRUSTED_SOURCE_HINTS.some((hint) => sourceUrl.includes(hint))
 
-  if (hasNegative && !hasPositive) return false
-  return hasPositive
+  if (hasHardBlock && positiveScore < 3) return false
+
+  const relevanceScore = positiveScore - negativeScore
+  if (isTrustedSource) return relevanceScore >= 1
+  return relevanceScore >= 2
 }
