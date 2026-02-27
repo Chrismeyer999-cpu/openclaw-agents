@@ -49,6 +49,9 @@ export default async function DashboardNieuwsDetailPage({ params, searchParams }
             initialBody={item.body}
             initialFeaturedImageUrl={item.featuredImageUrl}
             initialFeaturedImageAlt={item.featuredImageAlt}
+            title={item.title}
+            summary={item.summary}
+            rationale={'rationale' in item ? (item as { rationale?: string | null }).rationale ?? null : null}
           />
         </CardContent>
       </Card>
