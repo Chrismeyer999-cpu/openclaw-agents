@@ -103,25 +103,46 @@ export async function getWorkspaceAnalytics(workspaceId: string): Promise<Worksp
             }
         }
 
-        // Load GSC snapshots for 60 days (for delta calculation)
-        const { data: gscRaw } = await supabase
-            .from('gsc_snapshots')
-            .select('pillar_page_id, clicks, impressions, ctr, avg_position, snapshot_date')
-            .in('pillar_page_id', pageIds)
-            .gte('snapshot_date', sinceDate60)
-            .order('snapshot_date', { ascending: true })
+        // Fetch GSC snapshots safely in chunks to avoid URL limit and max-rows limits
+        const gscData: any[] = []
+        const chunkSize = 15 // ensures URL size < 4KB and max returned rows < 1000
+        const promises = []
+        for (let i = 0; i < pageIds.length; i += chunkSize) {
+            const chunk = pageIds.slice(i, i + chunkSize)
+            promises.push(
+                supabase
+                    .from('gsc_snapshots')
+                    .select('pillar_page_id, clicks, impressions, ctr, avg_position, snapshot_date')
+                    .in('pillar_page_id', chunk)
+                    .gte('snapshot_date', sinceDate60)
+            )
+        }
+        for (let i = 0; i < promises.length; i += 5) {
+            const results = await Promise.all(promises.slice(i, i + 5))
+            results.forEach(({ data }) => {
+                if (data) gscData.push(...data)
+            })
+        }
+        gscData.sort((a, b) => a.snapshot_date.localeCompare(b.snapshot_date))
 
-        const gscData = gscRaw ?? []
+        // Fetch GA4 sessions safely handling max-rows using pagination loop
+        const gaData: any[] = []
+        let offset = 0
+        const limitSize = 1000
+        while (true) {
+            const { data: gaChunk } = await supabase
+                .from('ga4_page_snapshots')
+                .select('page_url, sessions, snapshot_date')
+                .eq('workspace_id', workspaceId)
+                .gte('snapshot_date', sinceDate60)
+                .range(offset, offset + limitSize - 1)
 
-        // Load GA4 sessions for 60 days
-        const { data: gaRaw } = await supabase
-            .from('ga4_page_snapshots')
-            .select('page_url, sessions, snapshot_date')
-            .eq('workspace_id', workspaceId)
-            .gte('snapshot_date', sinceDate60)
-            .order('snapshot_date', { ascending: true })
-
-        const gaData = gaRaw ?? []
+            if (!gaChunk || gaChunk.length === 0) break
+            gaData.push(...gaChunk)
+            if (gaChunk.length < limitSize) break
+            offset += limitSize
+        }
+        gaData.sort((a, b) => a.snapshot_date.localeCompare(b.snapshot_date))
 
         // Build page index
         const pageMap = new Map(pages.map((p) => [p.id, p]))
