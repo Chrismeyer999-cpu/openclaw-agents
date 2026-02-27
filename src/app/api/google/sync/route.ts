@@ -312,7 +312,7 @@ async function syncWorkspaceGa4(
 async function getOAuthAccessTokenFromRefresh(refreshToken: string, scope: string) {
   const clientId = process.env.GOOGLE_OAUTH_CLIENT_ID?.trim()
   const clientSecret = process.env.GOOGLE_OAUTH_CLIENT_SECRET?.trim()
-  if (!clientId || !clientSecret) return null
+  if (!clientId || !clientSecret) throw new Error('OAuth env ontbreekt')
 
   const params = new URLSearchParams()
   params.set('client_id', clientId)
@@ -326,8 +326,9 @@ async function getOAuthAccessTokenFromRefresh(refreshToken: string, scope: strin
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: params.toString()
   })
-  if (!res.ok) return null
-  const payload = (await res.json()) as { access_token?: string }
+
+  const payload = (await res.json().catch(() => ({}))) as { access_token?: string, error_description?: string, error?: string }
+  if (!res.ok) throw new Error(payload.error_description ?? payload.error ?? `token_http_${res.status}`)
   return payload.access_token ?? null
 }
 
