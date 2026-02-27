@@ -13,10 +13,10 @@ import { Sparkles, TrendingUp, AlertCircle, FileText, CheckCircle2, ArrowRight, 
 
 export default async function DashboardPage() {
   const [overview, cost, google, todos, perf] = await Promise.all([
-    getOverviewData(), 
-    getCostOverview(), 
-    getGoogleStatus(), 
-    getTodos(8), 
+    getOverviewData(),
+    getCostOverview(),
+    getGoogleStatus(),
+    getTodos(8),
     getPerformanceInsights()
   ])
 
@@ -31,7 +31,7 @@ export default async function DashboardPage() {
       <header className="relative overflow-hidden rounded-3xl border border-gray-200/50 bg-white/60 p-8 shadow-xl backdrop-blur-xl dark:border-gray-800/50 dark:bg-gray-950/40">
         <div className="absolute top-0 -left-20 h-64 w-64 rounded-full bg-orange-500/20 blur-[100px]" />
         <div className="absolute -right-20 -bottom-20 h-64 w-64 rounded-full bg-indigo-500/20 blur-[100px]" />
-        
+
         <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-3">
             <div className="inline-flex items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-700 dark:border-orange-500/30 dark:bg-orange-500/10 dark:text-orange-400">
@@ -45,7 +45,7 @@ export default async function DashboardPage() {
               Your intelligent companion for organic growth. We monitor your search performance, analyze LLM visibility, and actively generate high-converting content.
             </p>
           </div>
-          
+
           <div className="flex shrink-0 items-center gap-3">
             <Link href="/dashboard/nieuws" className="group flex items-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-indigo-500 px-5 py-2.5 text-sm font-medium text-white shadow-md transition-all hover:scale-[1.02] hover:shadow-lg dark:hover:shadow-orange-500/20">
               <Bot className="h-4 w-4" />
@@ -61,7 +61,7 @@ export default async function DashboardPage() {
           <Zap className="h-5 w-5 text-orange-500" />
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Action Center</h2>
         </div>
-        
+
         <div className="grid gap-4 md:grid-cols-3">
           {/* Action 1: Pending Reviews */}
           <div className="group relative flex cursor-pointer flex-col justify-between overflow-hidden rounded-2xl border border-gray-200/60 bg-white p-5 shadow-sm transition-all hover:border-orange-500/30 hover:shadow-md dark:border-gray-800/60 dark:bg-gray-900/50">
@@ -129,9 +129,10 @@ export default async function DashboardPage() {
       </div>
 
       {/* KPI STRIP - REDESIGNED */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
-        <KpiCard title="Organic Clicks" value={overview.totalClicks30d.toLocaleString('nl-NL')} trend="+12%" icon={<Search className="h-4 w-4" />} />
-        <KpiCard title="LLM Mentions" value={overview.totalMentions30d.toLocaleString('nl-NL')} trend="+24%" icon={<Bot className="h-4 w-4" />} color="emerald" />
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        <KpiCard title="Organic Clicks" value={overview.totalClicks30d.toLocaleString('nl-NL')} trend="30d" icon={<Search className="h-4 w-4" />} />
+        <KpiCard title="Organic Impr." value={overview.totalImpressions30d.toLocaleString('nl-NL')} trend="30d" icon={<Search className="h-4 w-4" />} />
+        <KpiCard title="LLM Mentions" value={overview.totalMentions30d.toLocaleString('nl-NL')} trend="30d" icon={<Bot className="h-4 w-4" />} color="emerald" />
         <KpiCard title="Schema Health" value={`${overview.structuredCoverage}%`} trend="Stable" icon={<FileText className="h-4 w-4" />} />
         <KpiCard title="Pending Review" value={overview.pendingNieuws.toString()} isAlert={overview.pendingNieuws > 0} icon={<FileText className="h-4 w-4" />} />
         <KpiCard title="AI Agent Spend" value={cost ? `$${cost.monthUsd.toFixed(2)}` : 'n/a'} isAlert={isBudgetAlert} icon={<Activity className="h-4 w-4" />} />
@@ -144,13 +145,17 @@ export default async function DashboardPage() {
               <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{d.domain}</p>
               <TrendingUp className="h-4 w-4 text-emerald-500" />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-2">
               <div>
                 <p className="text-xs text-gray-500">Clicks</p>
                 <p className="font-medium text-gray-900 dark:text-white">{d.clicks.toLocaleString()}</p>
                 <p className={`text-[10px] ${d.deltaClicksPct >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
                   {d.deltaClicksPct >= 0 ? '+' : ''}{d.deltaClicksPct.toFixed(1)}%
                 </p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500">Impressions</p>
+                <p className="font-medium text-gray-900 dark:text-white">{d.impressions.toLocaleString()}</p>
               </div>
               <div>
                 <p className="text-xs text-gray-500">Sessions</p>
@@ -175,7 +180,7 @@ export default async function DashboardPage() {
           <Activity className="h-5 w-5 text-indigo-500" />
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Workspace Analytics Engine</h2>
         </div>
-        
+
         <div className="grid gap-4 xl:grid-cols-3">
           {overview.workspaceStats.map((workspace) => {
             const schemaCoverage = workspace.pages === 0 ? 0 : Math.round((workspace.pagesWithSchema / workspace.pages) * 100)
@@ -190,22 +195,23 @@ export default async function DashboardPage() {
                 </CardHeader>
                 <CardContent className="space-y-4 pt-4">
                   <div className="grid grid-cols-2 gap-3 text-sm">
-                    <StatItem label="Indexed Pages" value={workspace.pages} />
+                    <StatItem label="Indexed Pages" value={workspace.pages.toLocaleString('nl-NL')} />
                     <StatItem label="Schema Health" value={`${schemaCoverage}%`} />
-                    <StatItem label="Organic Clicks" value={workspace.clicks30d} />
-                    <StatItem label="LLM Mentions" value={workspace.mentions30d} />
+                    <StatItem label="Organic Clicks" value={workspace.clicks30d.toLocaleString('nl-NL')} />
+                    <StatItem label="Organic Impr." value={workspace.impressions30d.toLocaleString('nl-NL')} />
+                    <StatItem label="LLM Mentions" value={workspace.mentions30d.toLocaleString('nl-NL')} />
                   </div>
                   <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
                     <div className="flex gap-2">
-                       {workspace.pendingNieuws > 0 && (
-                          <span className="flex items-center gap-1 text-xs font-medium text-orange-600 dark:text-orange-400">
-                            <span className="relative flex h-2 w-2">
-                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                              <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
-                            </span>
-                            {workspace.pendingNieuws} requires review
+                      {workspace.pendingNieuws > 0 && (
+                        <span className="flex items-center gap-1 text-xs font-medium text-orange-600 dark:text-orange-400">
+                          <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
                           </span>
-                       )}
+                          {workspace.pendingNieuws} requires review
+                        </span>
+                      )}
                     </div>
                     <Link href={`/dashboard/${workspace.id}`} className="text-sm font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 flex items-center gap-1 group">
                       Deep Dive <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-1" />
@@ -233,7 +239,7 @@ function KpiCard({ title, value, trend, isAlert, icon, color = 'indigo' }: { tit
       </div>
       {trend && (
         <p className="mt-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
-           {trend} last 30d
+          {trend} last 30d
         </p>
       )}
     </div>

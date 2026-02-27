@@ -8,12 +8,14 @@ export interface WorkspaceStat extends WorkspaceRow {
   pages: number
   pagesWithSchema: number
   clicks30d: number
+  impressions30d: number
   mentions30d: number
   pendingNieuws: number
 }
 
 export interface OverviewData {
   totalClicks30d: number
+  totalImpressions30d: number
   totalMentions30d: number
   structuredCoverage: number
   pendingNieuws: number

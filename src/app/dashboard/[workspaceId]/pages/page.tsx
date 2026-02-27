@@ -120,9 +120,17 @@ export default async function WorkspacePagesPage({
           <div className="flex gap-4 text-right">
             <div>
               <p className="text-xs text-gray-400">vs vorige periode</p>
-              <p className={`text-sm font-bold ${data.deltaClicksPct >= 0 ? 'text-emerald-600' : 'text-rose-500'}`}>
-                {fmtPct(data.deltaClicksPct)} clicks
-              </p>
+              <div className="mt-1 flex flex-col gap-0.5">
+                <p className={`text-sm font-bold ${data.deltaClicksPct >= 0 ? 'text-emerald-600' : 'text-rose-500'}`}>
+                  {fmtPct(data.deltaClicksPct)} clicks
+                </p>
+                <p className={`text-sm font-bold ${data.deltaImpressionsPct >= 0 ? 'text-emerald-600' : 'text-rose-500'}`}>
+                  {fmtPct(data.deltaImpressionsPct)} vertoningen
+                </p>
+                <p className={`text-sm font-bold ${data.deltaSessionsPct >= 0 ? 'text-emerald-600' : 'text-rose-500'}`}>
+                  {fmtPct(data.deltaSessionsPct)} sessies
+                </p>
+              </div>
             </div>
           </div>
         </div>
