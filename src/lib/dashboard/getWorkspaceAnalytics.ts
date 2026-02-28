@@ -184,12 +184,16 @@ export async function getWorkspaceAnalytics(workspaceId: string): Promise<Worksp
             sessionsByDate.set(d, (sessionsByDate.get(d) ?? 0) + Number(r.sessions ?? 0))
         })
 
-        // Generate all 30 dates
-        const allDates = Array.from({ length: 30 }, (_, i) => {
-            const d = new Date(since30)
-            d.setDate(d.getDate() + i)
-            return d.toISOString().slice(0, 10)
-        })
+        // Generate dates up to the most recent GSC data point (GSC lags 2-3 days, GA4 is faster. Capping at GSC prevents 0-drops for clicks/impr.)
+        let maxDateStr = sinceDate30
+        gsc30.forEach(r => { if (r.snapshot_date > maxDateStr) maxDateStr = r.snapshot_date })
+
+        const allDates: string[] = []
+        let current = new Date(since30)
+        while (current.toISOString().slice(0, 10) <= maxDateStr) {
+            allDates.push(current.toISOString().slice(0, 10))
+            current.setDate(current.getDate() + 1)
+        }
 
         const trend: TrafficPoint[] = allDates.map((date) => ({
             date,
