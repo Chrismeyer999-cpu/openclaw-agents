@@ -64,7 +64,7 @@ function mapAgentRow(row: AgentNewsRecord): UnifiedNewsItem {
   const reviewStatus = normalizeReviewStatus(asString(row.review_status) ?? asString(row.status) ?? 'pending')
   const createdAt = asString(row.created_at) ?? asString(row.published_at) ?? asString(row.published) ?? new Date().toISOString()
   const publishedAt = asString(row.published_at) ?? asString(row.published) ?? null
-  const site = inferSiteFromText([asString(row.site), asString(row.topic), title, summary, sourceUrl, sourceType])
+  const site = inferSiteFromText([asString(row._source_table), asString(row.site), asString(row.topic), title, summary, sourceUrl, sourceType])
 
   return {
     id: asString(row.id) ?? title,

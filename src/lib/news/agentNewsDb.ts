@@ -23,6 +23,10 @@ export async function listAgentNewsRecords(limit: number, status?: string) {
     if (!error && Array.isArray(data) && data.length > 0) {
       let chunk = data as AgentNewsRecord[]
 
+      chunk.forEach(r => {
+        r._source_table = table
+      })
+
       if (status && status !== 'all') {
         // Filter chunk locally because tables have different column names (review_status vs status)
         chunk = chunk.filter(r => {
