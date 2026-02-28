@@ -1,3 +1,4 @@
+import { listNewsItems } from '@/lib/news'
 import { createClient } from '@/lib/supabase/server'
 import type { OverviewData, WorkspaceRow, WorkspaceStat } from '@/lib/dashboard/types'
 
@@ -13,10 +14,10 @@ export async function getOverviewData(): Promise<OverviewData> {
     supabase.from('gsc_snapshots').select('pillar_page_id, clicks, impressions, snapshot_date').gte('snapshot_date', sinceDate),
     supabase.from('intent_clusters').select('id, workspace_id'),
     supabase.from('llm_mentions').select('id, intent_cluster_id, mentioned, checked_at'),
-    supabase.from('nieuws').select('id, workspace_id, title, review_status, created_at')
+    listNewsItems({ status: 'pending', limit: 200 })
   ])
 
-  if (workspacesRes.error || pagesRes.error || snapshotsRes.error || clustersRes.error || mentionsRes.error || nieuwsRes.error) {
+  if (workspacesRes.error || pagesRes.error || snapshotsRes.error || clustersRes.error || mentionsRes.error) {
     throw new Error('Kon overview data niet laden uit Supabase.')
   }
 
@@ -27,6 +28,8 @@ export async function getOverviewData(): Promise<OverviewData> {
   const stats = new Map<string, WorkspaceStat>(
     workspaces.map((workspace) => [workspace.id, { ...workspace, pages: 0, pagesWithSchema: 0, clicks30d: 0, impressions30d: 0, mentions30d: 0, pendingNieuws: 0 }])
   )
+
+  const workspaceByDomain = new Map(workspaces.map(w => [w.domain, w.id]))
 
   const pageWorkspace = new Map<string, { workspaceId: string; title: string; url: string }>()
     ; (pagesRes.data ?? []).forEach((page) => {
@@ -58,9 +61,10 @@ export async function getOverviewData(): Promise<OverviewData> {
       workspaceEntry.mentions30d += 1
     })
 
-    ; (nieuwsRes.data ?? []).forEach((item) => {
-      if (item.review_status !== 'pending') return
-      const workspaceEntry = stats.get(item.workspace_id)
+    ; (nieuwsRes.items ?? []).forEach((item) => {
+      const workspaceId = workspaceByDomain.get(item.site)
+      if (!workspaceId) return
+      const workspaceEntry = stats.get(workspaceId)
       if (!workspaceEntry) return
       workspaceEntry.pendingNieuws += 1
     })
@@ -77,11 +81,11 @@ export async function getOverviewData(): Promise<OverviewData> {
       return { id: pageId, title: page?.title ?? '-', url: page?.url ?? '-', domain: stats.get(page?.workspaceId ?? '')?.domain ?? '-', clicks30d }
     })
 
-  const pendingItems = (nieuwsRes.data ?? [])
-    .filter((item) => item.review_status === 'pending')
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+  const pendingItems = (nieuwsRes.items ?? [])
+    .filter((item) => item.reviewStatus === 'pending')
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 5)
-    .map((item) => ({ id: item.id, title: item.title, domain: stats.get(item.workspace_id)?.domain ?? '-', created_at: item.created_at }))
+    .map((item) => ({ id: item.id, title: item.title, domain: item.site, created_at: item.createdAt }))
 
   return {
     totalClicks30d: workspaceStats.reduce((sum, item) => sum + item.clicks30d, 0),
