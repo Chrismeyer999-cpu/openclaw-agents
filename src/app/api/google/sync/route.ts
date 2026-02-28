@@ -125,22 +125,50 @@ async function syncWorkspaceGsc(
   const endDate = snapshotDate
   // Query with BOTH 'date' and 'page' dimensions so we get daily data points per page
   // This enables the trend chart to show actual daily traffic over time
-  const body = {
-    startDate,
-    endDate,
-    dimensions: ['date', 'page'],
-    rowLimit: 5000
+
+  const rows: GscRow[] = []
+  const rowLimit = 25000
+
+  // Chunk by 15 days to avoid Google's hard 25K total row cut-off per payload on giant sites
+  const endD = new Date(snapshotDate)
+  let currentStart = new Date(startDate)
+
+  while (currentStart <= endD) {
+    let currentEnd = new Date(currentStart)
+    currentEnd.setDate(currentEnd.getDate() + 14) // 15 day chunk
+    if (currentEnd > endD) currentEnd = endD
+
+    let startRow = 0
+    const chunkStart = currentStart.toISOString().slice(0, 10)
+    const chunkEnd = currentEnd.toISOString().slice(0, 10)
+
+    while (true) {
+      const body = {
+        startDate: chunkStart,
+        endDate: chunkEnd,
+        dimensions: ['date', 'page'],
+        rowLimit,
+        startRow
+      }
+
+      const res = await fetch(`https://searchconsole.googleapis.com/webmasters/v3/sites/${encodeURIComponent(ws.gsc_property)}/searchAnalytics/query`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      })
+
+      if (!res.ok) throw new Error(`GSC query failed: ${res.status} ${await safeText(res)}`)
+      const payload = (await res.json()) as { rows?: GscRow[] }
+      const chunk = payload.rows ?? []
+      rows.push(...chunk)
+
+      if (chunk.length < rowLimit) break
+      startRow += rowLimit
+    }
+
+    // next chunk
+    currentStart.setDate(currentStart.getDate() + 15)
   }
-
-  const res = await fetch(`https://searchconsole.googleapis.com/webmasters/v3/sites/${encodeURIComponent(ws.gsc_property)}/searchAnalytics/query`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
-  })
-
-  if (!res.ok) throw new Error(`GSC query failed: ${res.status} ${await safeText(res)}`)
-  const payload = (await res.json()) as { rows?: GscRow[] }
-  const rows = payload.rows ?? []
 
   // Auto-expand pillar_pages from real GSC pages (prevents tiny 3-page dashboard)
   // With date dimension, keys = [date, page_url]

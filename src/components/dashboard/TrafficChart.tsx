@@ -9,43 +9,59 @@ function formatDate(iso: string) {
 }
 
 export function TrafficChart({ points }: { points: TrafficPoint[] }) {
-    const [activeMetric, setActiveMetric] = useState<'clicks' | 'impressions' | 'sessions'>('clicks')
+    const [activeMetrics, setActiveMetrics] = useState<Array<'clicks' | 'impressions' | 'sessions'>>(['clicks'])
     const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
 
     if (!points.length) {
         return (
             <div className="flex h-52 items-center justify-center rounded-2xl border border-dashed border-gray-200 dark:border-gray-800">
-                <p className="text-sm text-gray-400">Nog geen GSC-data. Koppel Google Search Console en run een sync.</p>
+                <p className="text-sm text-gray-400">Nog geen data. Koppel Google Search Console en run een sync.</p>
             </div>
         )
     }
 
     const metrics = {
-        clicks: { label: 'Clicks', color: '#f97316', bg: '#f9731620' },
-        impressions: { label: 'Impressions', color: '#6366f1', bg: '#6366f120' },
-        sessions: { label: 'Sessions', color: '#10b981', bg: '#10b98120' }
+        clicks: { label: 'Clicks', color: '#f97316' },
+        impressions: { label: 'Impressions', color: '#6366f1' },
+        sessions: { label: 'Sessions', color: '#10b981' }
     }
 
-    const values = points.map((p) => p[activeMetric])
-    const max = Math.max(1, ...values)
-    const minVal = Math.min(...values)
+    const toggleMetric = (key: 'clicks' | 'impressions' | 'sessions') => {
+        if (activeMetrics.includes(key)) {
+            if (activeMetrics.length > 1) setActiveMetrics(activeMetrics.filter((m) => m !== key))
+        } else {
+            setActiveMetrics([...activeMetrics, key])
+        }
+    }
+
     const w = 800
-    const h = 180
+    const h = 200
     const padLeft = 40
     const padRight = 16
     const padTop = 16
     const padBot = 32
 
     const xs = points.map((_, i) => padLeft + (i / Math.max(1, points.length - 1)) * (w - padLeft - padRight))
-    const ys = values.map((v) => padTop + ((max - v) / Math.max(1, max - minVal)) * (h - padTop - padBot))
 
-    const pathD = xs.map((x, i) => `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${ys[i].toFixed(1)}`).join(' ')
-    const areaD = `${pathD} L ${xs[xs.length - 1]} ${h - padBot} L ${xs[0]} ${h - padBot} Z`
+    // Compute metric paths
+    const lines = activeMetrics.map((key) => {
+        const values = points.map((p) => p[key])
+        const max = Math.max(1, ...values)
+        const minVal = Math.min(0, ...values) // keep base 0
+        const ys = values.map((v) => padTop + ((max - v) / Math.max(1, max - minVal)) * (h - padTop - padBot))
+        const pathD = xs.map((x, i) => `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${ys[i].toFixed(1)}`).join(' ')
 
-    const m = metrics[activeMetric]
+        return {
+            key,
+            max,
+            color: metrics[key].color,
+            pathD
+        }
+    })
 
-    // Y-axis labels
-    const yLabels = [max, Math.round(max / 2), 0]
+    // Y-axis labels from first active metric (usually clicks or impressions)
+    const primaryMetric = lines[0]
+    const yLabels = primaryMetric ? [primaryMetric.max, Math.round(primaryMetric.max / 2), 0] : []
 
     // X-axis: show ~6 labels
     const xStep = Math.max(1, Math.floor(points.length / 6))
@@ -58,14 +74,13 @@ export function TrafficChart({ points }: { points: TrafficPoint[] }) {
                 {(Object.keys(metrics) as Array<keyof typeof metrics>).map((key) => (
                     <button
                         key={key}
-                        onClick={() => setActiveMetric(key)}
-                        className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${activeMetric === key
-                                ? 'text-white shadow-md'
-                                : 'bg-gray-100 text-gray-500 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700'
+                        onClick={() => toggleMetric(key)}
+                        className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all ${activeMetrics.includes(key)
+                            ? 'bg-white text-gray-900 border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700 dark:text-white'
+                            : 'bg-transparent text-gray-500 border-transparent hover:bg-gray-100 dark:hover:bg-gray-800/50 dark:text-gray-400'
                             }`}
-                        style={activeMetric === key ? { backgroundColor: metrics[key].color } : {}}
                     >
-                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: metrics[key].color }} />
+                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: metrics[key].color, opacity: activeMetrics.includes(key) ? 1 : 0.4 }} />
                         {metrics[key].label}
                     </button>
                 ))}
@@ -75,16 +90,10 @@ export function TrafficChart({ points }: { points: TrafficPoint[] }) {
             <div className="relative" onMouseLeave={() => setHoveredIdx(null)}>
                 <svg
                     viewBox={`0 0 ${w} ${h}`}
-                    className="h-52 w-full"
+                    className="h-56 w-full"
                     style={{ cursor: 'crosshair' }}
+                    preserveAspectRatio="none"
                 >
-                    <defs>
-                        <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor={m.color} stopOpacity="0.25" />
-                            <stop offset="100%" stopColor={m.color} stopOpacity="0.02" />
-                        </linearGradient>
-                    </defs>
-
                     {/* Grid lines */}
                     {yLabels.map((val, i) => {
                         const yy = padTop + (i / 2) * (h - padTop - padBot)
@@ -104,13 +113,12 @@ export function TrafficChart({ points }: { points: TrafficPoint[] }) {
                         )
                     })}
 
-                    {/* Area fill */}
-                    <path d={areaD} fill="url(#areaGrad)" />
+                    {/* Lines */}
+                    {lines.map((l) => (
+                        <path key={l.key} d={l.pathD} fill="none" stroke={l.color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                    ))}
 
-                    {/* Line */}
-                    <path d={pathD} fill="none" stroke={m.color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-
-                    {/* Hover overlay */}
+                    {/* Hover overlay rectangles */}
                     {xs.map((x, i) => (
                         <rect
                             key={i}
@@ -126,8 +134,12 @@ export function TrafficChart({ points }: { points: TrafficPoint[] }) {
                     {/* Hover dot + vertical line */}
                     {hoveredIdx !== null && (
                         <>
-                            <line x1={xs[hoveredIdx]} y1={padTop} x2={xs[hoveredIdx]} y2={h - padBot} stroke={m.color} strokeWidth="1" strokeOpacity="0.4" strokeDasharray="4,2" />
-                            <circle cx={xs[hoveredIdx]} cy={ys[hoveredIdx]} r="5" fill={m.color} stroke="white" strokeWidth="2" />
+                            <line x1={xs[hoveredIdx]} y1={padTop} x2={xs[hoveredIdx]} y2={h - padBot} stroke="#9ca3af" strokeWidth="1" strokeOpacity="0.4" strokeDasharray="4,2" />
+                            {lines.map((l) => {
+                                const val = points[hoveredIdx][l.key]
+                                const yy = padTop + ((l.max - val) / Math.max(1, l.max)) * (h - padTop - padBot)
+                                return <circle key={l.key} cx={xs[hoveredIdx]} cy={yy} r="4" fill={l.color} stroke="white" strokeWidth="1.5" />
+                            })}
                         </>
                     )}
                 </svg>
@@ -138,21 +150,19 @@ export function TrafficChart({ points }: { points: TrafficPoint[] }) {
                         className="pointer-events-none absolute top-0 z-10 rounded-xl border border-gray-200 bg-white px-3 py-2 shadow-xl dark:border-gray-700 dark:bg-gray-900"
                         style={{ left: `${Math.min(80, (hoveredIdx / points.length) * 100 + 4)}%`, transform: 'translateX(-50%)' }}
                     >
-                        <p className="text-xs text-gray-500">{formatDate(points[hoveredIdx].date)}</p>
-                        <p className="mt-0.5 text-sm font-bold" style={{ color: m.color }}>{values[hoveredIdx].toLocaleString('nl-NL')} {m.label}</p>
-                        <div className="mt-1 grid grid-cols-3 gap-3 border-t border-gray-100 pt-1 dark:border-gray-700">
-                            <div className="text-center">
-                                <p className="text-[10px] text-gray-400">Clicks</p>
-                                <p className="text-xs font-semibold text-orange-600">{points[hoveredIdx].clicks}</p>
-                            </div>
-                            <div className="text-center">
-                                <p className="text-[10px] text-gray-400">Impr.</p>
-                                <p className="text-xs font-semibold text-indigo-600">{points[hoveredIdx].impressions}</p>
-                            </div>
-                            <div className="text-center">
-                                <p className="text-[10px] text-gray-400">Sessions</p>
-                                <p className="text-xs font-semibold text-emerald-600">{points[hoveredIdx].sessions}</p>
-                            </div>
+                        <p className="text-xs text-gray-500 mb-1">{formatDate(points[hoveredIdx].date)}</p>
+                        <div className="flex flex-col gap-1">
+                            {activeMetrics.map(key => (
+                                <div key={key} className="flex items-center gap-2 justify-between min-w-[100px]">
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: metrics[key].color }} />
+                                        <span className="text-[11px] font-medium text-gray-500">{metrics[key].label}</span>
+                                    </div>
+                                    <span className="text-xs font-bold" style={{ color: metrics[key].color }}>
+                                        {points[hoveredIdx][key].toLocaleString('nl-NL')}
+                                    </span>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 )}
