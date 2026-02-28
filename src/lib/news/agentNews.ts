@@ -33,6 +33,7 @@ export async function listAgentNews(filters: NewsFilters): Promise<UnifiedNewsIt
 export async function getAgentNewsById(id: string) {
   const result = await getAgentNewsRecordById(id)
   if (!result) return null
+  result.row._source_table = result.table
   return mapAgentRow(result.row)
 }
 
