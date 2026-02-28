@@ -13,10 +13,10 @@ export function inferSiteFromText(parts: Array<string | null | undefined>) {
   }
 
   if (text.includes('kavel')) return 'kavelarchitect.nl'
-  if (text.includes('zwijsen') || text.includes('jules')) return 'zwijsen.net'
-  if (text.includes('brikx') || text.includes('dso') || text.includes('omgevingswet')) return 'brikxai.nl'
+  if (text.includes('zwijsen') || text.includes('jules') || text.includes('architectuur') || text.includes('villa') || text.includes('houtbouw') || text.includes('generative')) return 'zwijsen.net'
 
-  return 'extern'
+  // Default to brikxai for construction/tech law/news since it's the catch-all
+  return 'brikxai.nl'
 }
 
 export const NEWS_SITES = KNOWN_SITES
