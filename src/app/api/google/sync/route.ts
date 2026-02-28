@@ -12,14 +12,26 @@ const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token'
 const GSC_SCOPE = 'https://www.googleapis.com/auth/webmasters.readonly'
 const GA4_SCOPE = 'https://www.googleapis.com/auth/analytics.readonly'
 
-export async function POST(request: Request) {
-  const supabase = await createClient()
-  const {
-    data: { user },
-    error: userError
-  } = await supabase.auth.getUser()
+export async function GET(request: Request) {
+  return handleSync(request)
+}
 
-  if (userError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+export async function POST(request: Request) {
+  return handleSync(request)
+}
+
+async function handleSync(request: Request) {
+  const supabase = await createClient()
+
+  // Check for Vercel Cron authorization or standard authenticated user
+  const authHeader = request.headers.get('authorization')
+  const cronSecret = process.env.CRON_SECRET
+  const isCron = cronSecret && authHeader === `Bearer ${cronSecret}`
+
+  if (!isCron) {
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    if (userError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
 
   const { data: workspaces, error } = await supabase.from('workspaces').select('id,domain,gsc_property,gsc_refresh_token,ga4_property')
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
