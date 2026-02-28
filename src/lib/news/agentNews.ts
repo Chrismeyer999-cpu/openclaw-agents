@@ -12,7 +12,7 @@ import {
 import type { NewsFilters, UnifiedNewsItem } from '@/lib/news/types'
 
 export async function listAgentNews(filters: NewsFilters): Promise<UnifiedNewsItem[] | null> {
-  const result = await listAgentNewsRecords(filters.limit ?? 200)
+  const result = await listAgentNewsRecords(filters.limit ?? 200, filters.status ?? undefined)
   if (!result) return null
 
   let items = result.rows
@@ -114,7 +114,17 @@ const POSITIVE_TERMS: Array<{ term: string; weight: number }> = [
   { term: 'duurzaam bouwen', weight: 2 },
   { term: 'isolatie', weight: 1 },
   { term: 'warmtepomp', weight: 1 },
-  { term: 'vve', weight: 1 }
+  { term: 'vve', weight: 1 },
+  { term: 'villa', weight: 2 },
+  { term: 'interieur', weight: 2 },
+  { term: 'generative design', weight: 3 },
+  { term: 'computational design', weight: 3 },
+  { term: 'bim', weight: 2 },
+  { term: 'revit', weight: 2 },
+  { term: '3d print', weight: 2 },
+  { term: 'staalbouw', weight: 1 },
+  { term: 'houtbouw', weight: 1 },
+  { term: 'prefab', weight: 1 }
 ]
 
 const NEGATIVE_TERMS: Array<{ term: string; weight: number }> = [

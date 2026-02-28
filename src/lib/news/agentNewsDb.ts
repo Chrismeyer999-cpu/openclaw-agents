@@ -9,16 +9,29 @@ export interface AgentNewsContentUpdate {
   featuredImageAlt?: string | null
 }
 
-export async function listAgentNewsRecords(limit: number) {
+export async function listAgentNewsRecords(limit: number, status?: string) {
   if (!isAgentSupabaseConfigured()) return null
 
   const client = createAgentServiceClient()
   const allRows: AgentNewsRecord[] = []
 
+  // Ensure we sort by date to get recent news when using a limit
+  const _limit = status && status !== 'all' ? Math.max(limit, 500) : limit
+
   for (const table of AGENT_NEWS_TABLES) {
-    const { data, error } = await client.from(table).select('*').limit(limit)
+    const { data, error } = await client.from(table).select('*').limit(_limit)
     if (!error && Array.isArray(data) && data.length > 0) {
-      allRows.push(...(data as AgentNewsRecord[]))
+      let chunk = data as AgentNewsRecord[]
+
+      if (status && status !== 'all') {
+        // Filter chunk locally because tables have different column names (review_status vs status)
+        chunk = chunk.filter(r => {
+          const rs = r.review_status ?? r.status ?? 'pending'
+          return rs === status
+        })
+      }
+
+      allRows.push(...chunk)
     }
   }
 
@@ -80,13 +93,13 @@ export async function updateAgentNewsRecordContent(id: string, update: AgentNews
   const imagePayloads: AgentNewsRecord[] =
     imageUrl !== undefined || imageAlt !== undefined
       ? [
-          compactPayload({ featured_image_url: imageUrl, featured_image_alt: imageAlt }),
-          compactPayload({ image_url: imageUrl, image_alt: imageAlt }),
-          compactPayload({ featured_image_url: imageUrl }),
-          compactPayload({ image_url: imageUrl }),
-          compactPayload({ featured_image_alt: imageAlt }),
-          compactPayload({ image_alt: imageAlt })
-        ]
+        compactPayload({ featured_image_url: imageUrl, featured_image_alt: imageAlt }),
+        compactPayload({ image_url: imageUrl, image_alt: imageAlt }),
+        compactPayload({ featured_image_url: imageUrl }),
+        compactPayload({ image_url: imageUrl }),
+        compactPayload({ featured_image_alt: imageAlt }),
+        compactPayload({ image_alt: imageAlt })
+      ]
       : []
 
   if (bodyPayloads.length === 0 && imagePayloads.length === 0) return { id }
